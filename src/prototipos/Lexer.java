@@ -176,11 +176,8 @@ public class Lexer {
 			if (Pattern.matches(RXNLOD, String.valueOf(caractual))) {
 				return new Token(Token.TPR, lexema);
 			}
-
-			// Caso contrario que siga el nextToken
-			return null;
 		}
-
+		// Caso contrario que siga el nextToken
 		return null;
 	}
 
@@ -189,24 +186,36 @@ public class Lexer {
 
 		scanEspacios();
 
-		// == PROBANDO ==
-		// if (Pattern.matches(RXLETRA, String.valueOf(caractual))) {
-		// ArrayList<String> Palabras = new ArrayList<String>();
-		// Palabras.add("type");
-		// Palabras.add("begin");
-		// Palabras.add("end");
-		// Palabras.add("to");
-		// Palabras.add("var");
-		// Palabras.add("const");
-		// Palabras.add("program");
-		// Token t = scanPR(Palabras, lexema);
-		// if (t != null) {
-		// return t;
-		// }
-		// }
-		// == PROBANDO ==
-
 		if (!eor) {
+			// == PROBANDO ==
+			// if (Pattern.matches(RXLETRA, String.valueOf(caractual))) {
+			// ArrayList<String> Palabras = new ArrayList<String>();
+			// Palabras.add("div");
+			// Palabras.add("or");
+			// Palabras.add("and");
+			// Palabras.add("not");
+			// Palabras.add("if");
+			// Palabras.add("then");
+			// Palabras.add("else");
+			// Palabras.add("of");
+			// Palabras.add("while");
+			// Palabras.add("do");
+			// Palabras.add("begin");
+			// Palabras.add("end");
+			// Palabras.add("const");
+			// Palabras.add("var");
+			// Palabras.add("type");
+			// Palabras.add("array");
+			// Palabras.add("function");
+			// Palabras.add("procedure");
+			// Palabras.add("program");
+			// Token t = scanPR(Palabras, lexema);
+			// if (t != null) {
+			// return t;
+			// }
+			// }
+			// == PROBANDO ==
+
 			// PALABRA RESERVADA VAR
 			// Leo vV
 			if (Pattern.matches("[vV]", String.valueOf(caractual))) {
@@ -295,7 +304,6 @@ public class Lexer {
 			return new Token(Token.TEOF, "<EOF>");
 		}
 	}
-
 	/**
 	 * @param args
 	 * @throws FileNotFoundException
