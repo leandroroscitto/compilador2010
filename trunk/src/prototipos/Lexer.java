@@ -184,16 +184,23 @@ public class Lexer {
 		scanEspacios();
 
 		// == PROBANDO ==
-		/*
-		 * if (Pattern.matches(RXLETRA, String.valueOf(caractual))) {
-		 * ArrayList<String> Palabras = new ArrayList<String>();
-		 * Palabras.add("type"); Palabras.add("begin"); Palabras.add("end");
-		 * Palabras.add("to"); Palabras.add("var"); Palabras.add("const");
-		 * Palabras.add("program"); Token t = scanPR(Palabras, lexema); if (t !=
-		 * null) { return t; } }
-		 */
+		// if (Pattern.matches(RXLETRA, String.valueOf(caractual))) {
+		// ArrayList<String> Palabras = new ArrayList<String>();
+		// Palabras.add("type");
+		// Palabras.add("begin");
+		// Palabras.add("end");
+		// Palabras.add("to");
+		// Palabras.add("var");
+		// Palabras.add("const");
+		// Palabras.add("program");
+		// Token t = scanPR(Palabras, lexema);
+		// if (t != null) {
+		// return t;
+		// }
+		// }
 		// == PROBANDO ==
-
+		
+		// PALABRA RESERVADA VAR
 		// Leo vV
 		if (Pattern.matches("[vV]", String.valueOf(caractual))) {
 			lexema += caractual;
@@ -242,6 +249,7 @@ public class Lexer {
 				return new Token(Token.TIDENT, lexema);
 			}
 		}
+		// FIN DE PALABRA RESERVADA VAR
 
 		// Leo un caracter distinto de vV
 		// Devería considerar todos los caracteres de inicio que no corresponden a
@@ -254,18 +262,18 @@ public class Lexer {
 		if (Pattern.matches(RXDIGITO, String.valueOf(caractual))) {
 			return scanNum(lexema);
 		}
-		
+
 		// Leo el fin de linea
 		if (Pattern.matches("[$]", String.valueOf(caractual))) {
 			return new Token(Token.TEOF, "<EOF>");
 		}
-		
+
 		// Leo {, inicio de comentario
 		if (Pattern.matches("[{]", String.valueOf(caractual))) {
 			scanComentario();
 			return nextToken();
 		}
-		
+
 		// Cualquier otro caracter
 		// A Completar con los simbolos restantes
 		if (matchbut(String.valueOf(caractual), ".", "[a-zA-Z0-9${]")) {
