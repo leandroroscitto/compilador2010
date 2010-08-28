@@ -7,6 +7,7 @@ type t1 = c1..23;
 var v1 : t1;
 	v2:t3;
 	v3:char;
+	v4:array [1..2] of char;
 procedure pro1(var a1:integer;a2:t1);
 var pv1:t2;
 begin
@@ -15,7 +16,7 @@ end;
 
 function mas(var a2:integer):integer;
 begin
-mas := 20;
+mas := 20*2;
 end;
 
 begin
