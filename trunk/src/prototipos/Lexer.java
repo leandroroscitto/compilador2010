@@ -12,12 +12,11 @@ import java.util.regex.Pattern;
 public class Lexer {
 	public class Token {
 		public static final int TEOF = 0;
-		public static final int TIDENT = 1;
-		public static final int TNUM = 2;
-		public static final int TPRVAR = 3;
+		public static final int TIDENTIFICADOR = 1;
+		public static final int TNUMERO = 2;
+		public static final int TPALRES_VAR = 3;
 		public static final int TOTRO = 4;
-		public static final int TPRCONS = 5;
-		public static final int TPR = 6;
+		public static final int TPR = 5;
 
 		public int tipo;
 		public String lexema;
@@ -44,6 +43,8 @@ public class Lexer {
 
 	char caractual;
 	public int nlinea;
+	public int ncol;
+	boolean eor = false;
 	BufferedReader reader;
 
 	public Lexer(String fileurl) throws FileNotFoundException {
@@ -52,6 +53,7 @@ public class Lexer {
 		reader = new BufferedReader(isr);
 
 		nlinea = 1;
+		ncol = 1;
 
 		caractual = leerchar();
 	}
@@ -59,13 +61,16 @@ public class Lexer {
 	private char leerchar() {
 		try {
 			if (reader.ready()) {
+				ncol++;
 				char c = (char) reader.read();
 				return c;
 			} else {
+				eor = true;
 				return '$';
 			}
 		} catch (IOException e) {
-			// $ no es un simbolo del alfabeto, se lo considera fin de linea
+			// MANEJAR MEJOR ESTO
+			eor = true;
 			return '$';
 		}
 	}
@@ -77,7 +82,7 @@ public class Lexer {
 			lexema += caractual;
 			caractual = leerchar();
 		}
-		return new Token(Token.TIDENT, lexema);
+		return new Token(Token.TIDENTIFICADOR, lexema);
 	}
 
 	private Token scanNum(String lexema) {
@@ -87,14 +92,33 @@ public class Lexer {
 			lexema += caractual;
 			caractual = leerchar();
 		}
-		return new Token(Token.TNUM, lexema);
+		return new Token(Token.TNUMERO, lexema);
 	}
 
 	private void scanEspacios() {
-		while (Pattern.matches("[ \t\n\r]", String.valueOf(caractual))) {
+		while (Pattern.matches("[ \t\n\r]", String.valueOf(caractual)) && !eor) {
+			if (Pattern.matches("[\n]", String.valueOf(caractual))) {
+				nlinea++;
+				ncol = 1;
+			}
+			caractual = leerchar();
+		}
+	}
+
+	private void scanComentario() {
+		int nlinc = nlinea;
+		while (matchbut(String.valueOf(caractual), "(.|[\n\r])", "[}]") && !eor) {
 			if (Pattern.matches("[\n]", String.valueOf(caractual))) {
 				nlinea++;
 			}
+			caractual = leerchar();
+		}
+		if (eor) {
+			// Llego a fin de linea en comentario
+			System.out.println("Excepción: fin de linea en comentario. (Linea de inicio de comentario:" + nlinc + ")");
+		}
+		if (Pattern.matches("[}]", String.valueOf(caractual))) {
+			// Termino el comentario
 			caractual = leerchar();
 		}
 	}
@@ -114,24 +138,6 @@ public class Lexer {
 		}
 
 		return Result;
-	}
-
-	private void scanComentario() {
-		int nlinc = nlinea;
-		while (matchbut(String.valueOf(caractual), "(.|[\n\r])", "[}$]")) {
-			if (Pattern.matches("[\n]", String.valueOf(caractual))) {
-				nlinea++;
-			}
-			caractual = leerchar();
-		}
-		if (Pattern.matches("[$]", String.valueOf(caractual))) {
-			// Llego a fin de linea en comentario
-			System.out.println("Excepción: fin de linea en comentario. (Linea de inicio de comentario:" + nlinc + ")");
-		}
-		if (Pattern.matches("[}]", String.valueOf(caractual))) {
-			// Termino el comentario
-			caractual = leerchar();
-		}
 	}
 
 	private Token scanPR(ArrayList<String> Palabras, String lexema) {
@@ -160,7 +166,7 @@ public class Lexer {
 				return scanIdent(lexema);
 			}
 			if (Pattern.matches(RXNLOD, String.valueOf(caractual))) {
-				return new Token(Token.TIDENT, lexema);
+				return new Token(Token.TIDENTIFICADOR, lexema);
 			}
 		} else {
 			// Encontre una palabra reservada?
@@ -199,92 +205,95 @@ public class Lexer {
 		// }
 		// }
 		// == PROBANDO ==
-		
-		// PALABRA RESERVADA VAR
-		// Leo vV
-		if (Pattern.matches("[vV]", String.valueOf(caractual))) {
-			lexema += caractual;
-			caractual = leerchar();
 
-			// Leo aA
-			if (Pattern.matches("[aA]", String.valueOf(caractual))) {
+		if (!eor) {
+			// PALABRA RESERVADA VAR
+			// Leo vV
+			if (Pattern.matches("[vV]", String.valueOf(caractual))) {
 				lexema += caractual;
 				caractual = leerchar();
 
-				// Leo rR
-				if (Pattern.matches("[rR]", String.valueOf(caractual))) {
+				// Leo aA
+				if (Pattern.matches("[aA]", String.valueOf(caractual))) {
 					lexema += caractual;
 					caractual = leerchar();
 
-					// Si no es letra o digito, completó la palabra reservada 'var'
-					if (Pattern.matches(RXNLOD, String.valueOf(caractual))) {
-						return new Token(Token.TPRVAR, lexema);
+					// Leo rR
+					if (Pattern.matches("[rR]", String.valueOf(caractual))) {
+						lexema += caractual;
+						caractual = leerchar();
+
+						// Si no es letra o digito, completó la palabra reservada
+						// 'var'
+						if (Pattern.matches(RXNLOD, String.valueOf(caractual))) {
+							return new Token(Token.TPALRES_VAR, lexema);
+						}
+						// Si es letra o digito, entonces no es la PR 'var', sino un
+						// identificador
+						if (Pattern.matches(RXLOD, String.valueOf(caractual))) {
+							return scanIdent(lexema);
+						}
 					}
-					// Si es letra o digito, entonces no es la PR 'var', sino un
+
+					// Leo un caracter alfanum distinto de rR, luego es un
 					// identificador
-					if (Pattern.matches(RXLOD, String.valueOf(caractual))) {
+					if (matchbut(String.valueOf(caractual), RXLOD, "[rR]")) {
 						return scanIdent(lexema);
+					}
+
+					// No leo un caracter alfanum, por lo tanto es un identificador
+					// 'va'
+					if (Pattern.matches(RXNLOD, String.valueOf(caractual))) {
+						return new Token(Token.TIDENTIFICADOR, lexema);
 					}
 				}
 
-				// Leo un caracter alfanum distinto de rR, luego es un identificador
-				if (matchbut(String.valueOf(caractual), RXLOD, "[rR]")) {
+				// Leo un caracter alfanum distinto de aA, por lo tanto no es la PR
+				// 'var', sino un identificador
+				if (matchbut(String.valueOf(caractual), RXLOD, "[aA]")) {
 					return scanIdent(lexema);
 				}
 
-				// No leo un caracter alfanum, por lo tanto es un identificador 'va'
+				// No leo un caracter alfnum, es un identificador 'v'
 				if (Pattern.matches(RXNLOD, String.valueOf(caractual))) {
-					return new Token(Token.TIDENT, lexema);
+					return new Token(Token.TIDENTIFICADOR, lexema);
 				}
 			}
+			// FIN DE PALABRA RESERVADA VAR
 
-			// Leo un caracter alfanum distinto de aA, por lo tanto no es la PR
-			// 'var', sino un identificador
-			if (matchbut(String.valueOf(caractual), RXLOD, "[aA]")) {
+			// Leo un caracter distinto de vV
+			// Devería considerar todos los caracteres de inicio que no
+			// corresponden a
+			// palabras reservadas
+			if (matchbut(String.valueOf(caractual), RXLETRA, "[vV]")) {
 				return scanIdent(lexema);
 			}
 
-			// No leo un caracter alfnum, es un identificador 'v'
-			if (Pattern.matches(RXNLOD, String.valueOf(caractual))) {
-				return new Token(Token.TIDENT, lexema);
+			// Leo un digito, es un numero
+			if (Pattern.matches(RXDIGITO, String.valueOf(caractual))) {
+				return scanNum(lexema);
 			}
-		}
-		// FIN DE PALABRA RESERVADA VAR
 
-		// Leo un caracter distinto de vV
-		// Devería considerar todos los caracteres de inicio que no corresponden a
-		// palabras reservadas
-		if (matchbut(String.valueOf(caractual), RXLETRA, "[vV]")) {
-			return scanIdent(lexema);
-		}
+			// Leo {, inicio de comentario
+			if (Pattern.matches("[{]", String.valueOf(caractual))) {
+				scanComentario();
+				return nextToken();
+			}
 
-		// Leo un digito, es un numero
-		if (Pattern.matches(RXDIGITO, String.valueOf(caractual))) {
-			return scanNum(lexema);
-		}
+			// Cualquier otro caracter
+			// A Completar con los simbolos restantes
+			if (matchbut(String.valueOf(caractual), ".", "[a-zA-Z0-9{]")) {
+				lexema += caractual;
+				caractual = leerchar();
+				return new Token(Token.TOTRO, lexema);
+			}
 
-		// Leo el fin de linea
-		if (Pattern.matches("[$]", String.valueOf(caractual))) {
+			// HUBO UN ERROR
+			return new Token(-1, "ERROR");
+		} else {
+			// PARA INDICAR NOMAS, CAMBIAR
 			return new Token(Token.TEOF, "<EOF>");
 		}
-
-		// Leo {, inicio de comentario
-		if (Pattern.matches("[{]", String.valueOf(caractual))) {
-			scanComentario();
-			return nextToken();
-		}
-
-		// Cualquier otro caracter
-		// A Completar con los simbolos restantes
-		if (matchbut(String.valueOf(caractual), ".", "[a-zA-Z0-9${]")) {
-			lexema += caractual;
-			caractual = leerchar();
-			return new Token(Token.TOTRO, lexema);
-		}
-
-		// HUBO UN ERROR
-		return new Token(-1, "ERROR");
-
 	}
 
 	/**
@@ -296,10 +305,12 @@ public class Lexer {
 		Lexer L = new Lexer("./Ejemplo1.pas");
 
 		Token T = L.nextToken();
-		System.out.println("Tipo: " + T.tipo + ", lexema:'" + T.lexema + "', numero de linea=" + L.nlinea + ".");
+		System.out.println("Tipo: " + T.tipo + ", lexema:'" + T.lexema + "', numero de linea=" + L.nlinea + "|"
+				+ (L.ncol - 1) + ".");
 		while (T.tipo != Token.TEOF) {
 			T = L.nextToken();
-			System.out.println("Tipo: " + T.tipo + ", lexema:'" + T.lexema + "', numero de linea=" + L.nlinea + ".");
+			System.out.println("Tipo: " + T.tipo + ", lexema:'" + T.lexema + "', numero de linea=" + L.nlinea + "|"
+					+ (L.ncol - 1) + ".");
 		}
 	}
 
