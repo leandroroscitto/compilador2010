@@ -15,12 +15,16 @@ public class Lexer {
 	private final String RXLETRA = "[a-zA-Z]";
 	private final String RXDIGITO = "[0-9]";
 	private final String RXALFABETO = "[a-zA-Z0-9+\\*-=<>()\\[\\].,;:'\t\n\r ]";
+	private final String RXSIMBOLO = "[.=>]";
+
 
 	char caractual;
 	public int nlinea;
 	boolean eof = false;
 	BufferedReader reader;
 
+	
+	//-------------------------------------------------------------------------
 	// Dada una cadena input (representación de string de un char)
 	// determina si machea con match, y no machea con nomatch.
 	// Por ejemplo si machea con todos los caracteres (match=RXALFABETO) menos
@@ -36,6 +40,7 @@ public class Lexer {
 		return ((machea1 == true) && (machea2 == false));
 	}
 
+	//-------------------------------------------------------------------------
 	// Crea una nueva instancia del Lexer, dado un archivo de entrada
 	public Lexer(String fileurl) throws FileNotFoundException {
 		FileInputStream fis = new FileInputStream(fileurl);
@@ -47,7 +52,8 @@ public class Lexer {
 		// Lee un caracter, para estar siempre uno adelantado
 		caractual = leerchar();
 	}
-
+	
+	//-------------------------------------------------------------------------
 	// Lee un caracter del buffer de entrada
 	// En el caso de llegar al final de un archivo, lo indica
 	// en la variable eof
@@ -76,7 +82,8 @@ public class Lexer {
 			return '$';
 		}
 	}
-
+	
+	//-------------------------------------------------------------------------
 	// Construye o continua la construccion de un identificador
 	private Token scanIdent(String lexema) {
 		lexema += caractual;
@@ -87,7 +94,7 @@ public class Lexer {
 		}
 		return new Token(Token.TIDENTIFICADOR, lexema, nlinea);
 	}
-
+	//-------------------------------------------------------------------------
 	// Construye o continua la construccion de un numero
 	// (secuencia pura de digitos)
 	private Token scanNum(String lexema) {
@@ -99,7 +106,92 @@ public class Lexer {
 		}
 		return new Token(Token.TNUMERO, lexema, nlinea);
 	}
-
+	
+	//-------------------------------------------------------------------------
+	private boolean Posible_Simbolo_Compuesto(String lexema){
+		return (lexema.equals("<")||lexema.equals(">")||lexema.equals(".")||lexema.equals(":"));
+	}
+	//-------------------------------------------------------------------------
+	private Token identificar_simbolo(String lexema){
+		Token T = null;
+		
+		if(lexema.equals("=")){
+			T = new Token(Token.TSIMBOLO_IGUAL, lexema, nlinea);
+		}
+		if (lexema.equals("<>")){
+			T= new Token(Token.TSIMBOLO_DISTINTO, lexema, nlinea);
+		}
+		if (lexema.equals("<")){
+			T= new Token(Token.TSIMBOLO_MENOR, lexema, nlinea);
+		}
+		if (lexema.equals(">")){
+			T= new Token(Token.TSIMBOLO_MAYOR, lexema, nlinea);
+		}
+		if (lexema.equals("<>")){
+			T= new Token(Token.TSIMBOLO_DISTINTO, lexema, nlinea);
+		}
+		if(lexema.equals("<=")){
+			T = new Token(Token.TSIMBOLO_MENORIGUAL, lexema, nlinea);
+		}
+		if(lexema.equals(">=")){
+			T = new Token(Token.TSIMBOLO_MAYORIGUAL, lexema, nlinea);
+		}
+		if(lexema.equals("-")){
+			T = new Token(Token.TOPERMENOS, lexema, nlinea);
+		}
+		if(lexema.equals("*")){
+			T = new Token(Token.TOPERMULT, lexema, nlinea);
+		}
+		if(lexema.equals("(")){
+			T = new Token(Token.TPARENTA, lexema, nlinea);
+		}
+		if(lexema.equals(")")){
+			T = new Token(Token.TPARENTC, lexema, nlinea);
+		}
+		if(lexema.equals("[")){
+			T = new Token(Token.TCORA, lexema, nlinea);
+		}
+		if(lexema.equals("]")){
+			T = new Token(Token.TCORC, lexema, nlinea);
+		}
+		if(lexema.equals(":=")){
+			T = new Token(Token.TASIGN, lexema, nlinea);
+		}
+		if(lexema.equals(".")){
+			T = new Token(Token.TPUNTO, lexema, nlinea);
+		}
+		if(lexema.equals(",")){
+			T = new Token(Token.TCOMA, lexema, nlinea);
+		}
+		if(lexema.equals(";")){
+			T = new Token(Token.TPUNTO_Y_COMA, lexema, nlinea);
+		}
+		if(lexema.equals(":")){
+			T = new Token(Token.TDOSPUNTOS, lexema, nlinea);
+		}
+		if(lexema.equals("'")){
+			T = new Token(Token.TCOMMILLA_SIMPLE, lexema, nlinea);
+		}
+		if(lexema.equals("..")){
+			T = new Token(Token.TDOBLEPUNTO, lexema, nlinea);
+		}
+		return T;
+	}
+	
+	//-------------------------------------------------------------------------
+	// Construye o continua la construccion de un simbolo
+	// (secuencia pura de digitos)
+	private Token scanSimb(String lexema) {	
+		lexema += caractual;
+		caractual = leerchar();
+		while (Posible_Simbolo_Compuesto(lexema) && Pattern.matches(RXSIMBOLO, String.valueOf(caractual)) && !eof) {
+			lexema += caractual;
+			caractual = leerchar();
+		}
+		return identificar_simbolo(lexema);
+	}
+	
+	//-------------------------------------------------------------------------
 	// Saltea todos los espacios, tabs y finales de linea
 	// Actualiza el numero de linea
 	private void scanEspacios() {
@@ -110,7 +202,8 @@ public class Lexer {
 			caractual = leerchar();
 		}
 	}
-
+	
+	//-------------------------------------------------------------------------
 	// Una vez leido el simbolo '{', saltea todo caracter a continuacion
 	// (incluyendo bajadas de linea y retorno de carro) hasta encontrar
 	// el simbolo '}'.
@@ -134,7 +227,8 @@ public class Lexer {
 			caractual = leerchar();
 		}
 	}
-
+	
+	//-------------------------------------------------------------------------
 	// Filtra todas las palabras de P que comiencen con el caracter
 	// ini, y devuelve estas palabras sin ese caracter inicial.
 	private ArrayList<String> filtini(char ini, ArrayList<String> P) {
@@ -154,6 +248,7 @@ public class Lexer {
 		return Result;
 	}
 
+	//-------------------------------------------------------------------------
 	// Luego de leer un caracter letra, determina si el proximo token
 	// es una palabra reservada del lenguaje, o si es un identificador
 	// (únicas dos posibilidades)
@@ -195,6 +290,56 @@ public class Lexer {
 				return scanIdent(lexema);
 			}
 			if (Pattern.matches(RXNLOD, String.valueOf(caractual))) {
+				//esto hay que hacerlo en una funcion aparte.
+				if (lexema.equals("if")){
+					return new Token(Token.TPALRES_IF, lexema, nlinea);
+				}
+				if(lexema.equals("then")){
+					return new Token(Token.TPALRES_THEN, lexema, nlinea);
+				}
+				if(lexema.equals("else")){
+					return new Token(Token.TPALRES_ELSE, lexema, nlinea);
+				}
+				if(lexema.equals("of")){
+					return new Token(Token.TPALRES_OF, lexema, nlinea);
+				}
+				if(lexema.equals("while")){
+					return new Token(Token.TPALRES_WHILE, lexema, nlinea);
+				}
+				if(lexema.equals("do")){
+					return new Token(Token.TPALRES_DO, lexema, nlinea);
+				}
+				if(lexema.equals("begin")){
+					return new Token(Token.TPALRES_BEGIN, lexema, nlinea);
+				}
+				if(lexema.equals("end")){
+					return new Token(Token.TPALRES_END, lexema, nlinea);
+				}
+				if(lexema.equals("const")){
+					return new Token(Token.TPALRES_CONST, lexema, nlinea);
+				}
+				if(lexema.equals("var")){
+					return new Token(Token.TPALRES_VAR, lexema, nlinea);
+				}
+				if(lexema.equals("type")){
+					return new Token(Token.TPALRES_TYPE, lexema, nlinea);
+				}
+				if(lexema.equals("array")){
+					return new Token(Token.TPALRES_ARRAY, lexema, nlinea);
+				}
+				if(lexema.equals("fuction")){
+					return new Token(Token.TPALRES_FUNCTION, lexema, nlinea);
+				}
+				if(lexema.equals("program")){
+					return new Token(Token.TPALRES_PROGRAM, lexema, nlinea);
+				}
+				if(lexema.equals("procedure")){
+					return new Token(Token.TPALRES_PROCEDURE, lexema, nlinea);
+				}
+				if(lexema.equals("div")){
+					return new Token(Token.TOPERDIV, lexema, nlinea);
+				}
+
 				return new Token(Token.TPR, lexema, nlinea);
 			}
 		}
@@ -203,6 +348,7 @@ public class Lexer {
 		return null;
 	}
 
+	//-------------------------------------------------------------------------
 	public Token nextToken() {
 		String lexema = "";
 
@@ -252,9 +398,10 @@ public class Lexer {
 			// Cualquier otro caracter
 			// A Completar con los simbolos restantes
 			if (matchbut(String.valueOf(caractual), ".", "[a-zA-Z0-9{]")) {
-				lexema += caractual;
-				caractual = leerchar();
-				return new Token(Token.TOTRO, lexema, nlinea);
+				//lexema += caractual;
+				//caractual = leerchar();
+				return scanSimb(lexema);
+				//return new Token(Token.TOTRO, lexema, nlinea);
 			}
 
 			// HUBO UN ERROR
@@ -264,13 +411,14 @@ public class Lexer {
 			return new Token(Token.TEOF, "<EOF>", nlinea);
 		}
 	}
+	//-------------------------------------------------------------------------
 	/**
 	 * @param args
 	 * @throws FileNotFoundException
 	 */
 	public static void main(String[] args) throws FileNotFoundException {
 		// TODO Auto-generated method stub
-		Lexer L = new Lexer("./identifNoValido.pas");
+		Lexer L = new Lexer("./Ejemplo1.pas");
 
 		Token T = L.nextToken();
 		System.out.println("Tipo: " + T.tipo + ", lexema:'" + T.lexema + "', numero de linea=" + T.nlinea + ".");
@@ -279,5 +427,5 @@ public class Lexer {
 			System.out.println("Tipo: " + T.tipo + ", lexema:'" + T.lexema + "', numero de linea=" + T.nlinea + ".");
 		}
 	}
-
+	//-------------------------------------------------------------------------
 }
