@@ -24,6 +24,7 @@ public class Lexer {
 	char caractual;
 	public int nlinea;
 	boolean eof = false;
+	ArrayList<String> Palabras;
 	BufferedReader reader;
 
 	// -------------------------------------------------------------------------
@@ -50,6 +51,28 @@ public class Lexer {
 		reader = new BufferedReader(isr);
 
 		nlinea = 1;
+		
+		// Crea la lista de palabras reservadas que detecta
+		Palabras = new ArrayList<String>();
+		Palabras.add("div");
+		Palabras.add("or");
+		Palabras.add("and");
+		Palabras.add("not");
+		Palabras.add("if");
+		Palabras.add("then");
+		Palabras.add("else");
+		Palabras.add("of");
+		Palabras.add("while");
+		Palabras.add("do");
+		Palabras.add("begin");
+		Palabras.add("end");
+		Palabras.add("const");
+		Palabras.add("var");
+		Palabras.add("type");
+		Palabras.add("array");
+		Palabras.add("function");
+		Palabras.add("procedure");
+		Palabras.add("program");
 
 		// Lee un caracter, para estar siempre uno adelantado
 		caractual = leerchar();
@@ -368,30 +391,8 @@ public class Lexer {
 			// Si lee una letra, es una palabra reservada o un
 			// identificador, no hay otra opción
 			if (Pattern.matches(RXLETRA, String.valueOf(caractual))) {
-				ArrayList<String> Palabras = new ArrayList<String>();
-				Palabras.add("div");
-				Palabras.add("or");
-				Palabras.add("and");
-				Palabras.add("not");
-				Palabras.add("if");
-				Palabras.add("then");
-				Palabras.add("else");
-				Palabras.add("of");
-				Palabras.add("while");
-				Palabras.add("do");
-				Palabras.add("begin");
-				Palabras.add("end");
-				Palabras.add("const");
-				Palabras.add("var");
-				Palabras.add("type");
-				Palabras.add("array");
-				Palabras.add("function");
-				Palabras.add("procedure");
-				Palabras.add("program");
 				Token t = scanPR(Palabras, lexema);
-				if (t != null) {
-					return t;
-				}
+				return t;
 			}
 
 			// Leo un digito, es un numero
