@@ -1,6 +1,6 @@
 package principal;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import prototipos.Lexer;
 import prototipos.Token;
@@ -142,7 +142,7 @@ public class Principal {
 		return nombre;
 	}
 	
-	public static void main(String[] args) throws FileNotFoundException, ExcepALexico {
+	public static void main(String[] args) throws ExcepALexico, IOException {
 		if (args.length > 0) {
 			System.out.println("Archivo de entrada:'"+args[0]+"':");
 			System.out.println("====================================");

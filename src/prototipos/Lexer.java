@@ -2,12 +2,16 @@ package prototipos;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.regex.Pattern;
+
+import excepciones.ExcepComMalForm;
+import excepciones.ExcepEOFCom;
+import excepciones.ExcepIdentNoValid;
+import excepciones.ExcepSimbNoValido;
 
 public class Lexer {
 	private final String RXLOD = "[a-zA-Z0-9]";
@@ -17,14 +21,12 @@ public class Lexer {
 	private final String RXALFABETO = "[a-zA-Z0-9+\\*-=<>()\\[\\]{}.,;:'\t\n\r ]";
 	private final String RXSIMBOLO = "[.=>]";
 
-
 	char caractual;
 	public int nlinea;
 	boolean eof = false;
 	BufferedReader reader;
 
-	
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 	// Dada una cadena input (representación de string de un char)
 	// determina si machea con match, y no machea con nomatch.
 	// Por ejemplo si machea con todos los caracteres (match=RXALFABETO) menos
@@ -40,9 +42,9 @@ public class Lexer {
 		return ((machea1 == true) && (machea2 == false));
 	}
 
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 	// Crea una nueva instancia del Lexer, dado un archivo de entrada
-	public Lexer(String fileurl) throws FileNotFoundException {
+	public Lexer(String fileurl) throws ExcepSimbNoValido, IOException {
 		FileInputStream fis = new FileInputStream(fileurl);
 		InputStreamReader isr = new InputStreamReader(fis);
 		reader = new BufferedReader(isr);
@@ -52,40 +54,30 @@ public class Lexer {
 		// Lee un caracter, para estar siempre uno adelantado
 		caractual = leerchar();
 	}
-	
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
 	// Lee un caracter del buffer de entrada
 	// En el caso de llegar al final de un archivo, lo indica
 	// en la variable eof
-	private char leerchar() {
-		try {
-			if (reader.ready()) {
-				char c = (char) reader.read();
+	private char leerchar() throws ExcepSimbNoValido, IOException {
+		char c = '$';
+		if (reader.ready()) {
+			c = (char) reader.read();
 
-				// Si no esta en el alfabeto de entrada
-				// levanta una excepción
-				if (Pattern.matches(RXALFABETO, String.valueOf(c))) {
-					return c;
-				} else {
-					System.out.println("Excepción: caracter no válido.");
-					// PARA CORTAR LA EJECUCION, NO NECESARIO DESPUES DE LA EXCEPCION
-					eof = true;
-					return '?';
-				}
-			} else {
-				eof = true;
-				return '$';
+			// Si no esta en el alfabeto de entrada
+			// levanta una excepción
+			if (!Pattern.matches(RXALFABETO, String.valueOf(c))) {
+				throw new ExcepSimbNoValido(c, nlinea);
 			}
-		} catch (IOException e) {
-			// MANEJAR MEJOR ESTO
+		} else {
 			eof = true;
-			return '$';
 		}
+		
+		return c;
 	}
-	
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 	// Construye o continua la construccion de un identificador
-	private Token scanIdent(String lexema) {
+	private Token scanIdent(String lexema) throws ExcepSimbNoValido, IOException {
 		lexema += caractual;
 		caractual = leerchar();
 		while (Pattern.matches(RXLOD, String.valueOf(caractual)) && !eof) {
@@ -94,94 +86,96 @@ public class Lexer {
 		}
 		return new Token(Token.TIDENTIFICADOR, lexema, nlinea);
 	}
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 	// Construye o continua la construccion de un numero
 	// (secuencia pura de digitos)
-	private Token scanNum(String lexema) {
+	private Token scanNum(String lexema) throws ExcepIdentNoValid, ExcepSimbNoValido, IOException {
 		lexema += caractual;
 		caractual = leerchar();
 		while (Pattern.matches(RXDIGITO, String.valueOf(caractual)) && !eof) {
 			lexema += caractual;
 			caractual = leerchar();
 		}
+		if (Pattern.matches(RXLETRA, String.valueOf(caractual))) {
+			throw new ExcepIdentNoValid(nlinea);
+		}
 		return new Token(Token.TNUMERO, lexema, nlinea);
 	}
-	
-	//-------------------------------------------------------------------------
-	private boolean Posible_Simbolo_Compuesto(String lexema){
-		return (lexema.equals("<")||lexema.equals(">")||lexema.equals(".")||lexema.equals(":"));
+
+	// -------------------------------------------------------------------------
+	private boolean Posible_Simbolo_Compuesto(String lexema) {
+		return (lexema.equals("<") || lexema.equals(">") || lexema.equals(".") || lexema.equals(":"));
 	}
-	//-------------------------------------------------------------------------
-	private Token identificar_simbolo(String lexema){
+	// -------------------------------------------------------------------------
+	private Token identificar_simbolo(String lexema) {
 		Token T = null;
-		
-		if(lexema.equals("=")){
+
+		if (lexema.equals("=")) {
 			T = new Token(Token.TSIMBOLO_IGUAL, lexema, nlinea);
 		}
-		if (lexema.equals("<>")){
-			T= new Token(Token.TSIMBOLO_DISTINTO, lexema, nlinea);
+		if (lexema.equals("<>")) {
+			T = new Token(Token.TSIMBOLO_DISTINTO, lexema, nlinea);
 		}
-		if (lexema.equals("<")){
-			T= new Token(Token.TSIMBOLO_MENOR, lexema, nlinea);
+		if (lexema.equals("<")) {
+			T = new Token(Token.TSIMBOLO_MENOR, lexema, nlinea);
 		}
-		if (lexema.equals(">")){
-			T= new Token(Token.TSIMBOLO_MAYOR, lexema, nlinea);
+		if (lexema.equals(">")) {
+			T = new Token(Token.TSIMBOLO_MAYOR, lexema, nlinea);
 		}
-		if(lexema.equals("<=")){
+		if (lexema.equals("<=")) {
 			T = new Token(Token.TSIMBOLO_MENORIGUAL, lexema, nlinea);
 		}
-		if(lexema.equals(">=")){
+		if (lexema.equals(">=")) {
 			T = new Token(Token.TSIMBOLO_MAYORIGUAL, lexema, nlinea);
 		}
-		if(lexema.equals("+")){
+		if (lexema.equals("+")) {
 			T = new Token(Token.TOPERMAS, lexema, nlinea);
 		}
-		if(lexema.equals("-")){
+		if (lexema.equals("-")) {
 			T = new Token(Token.TOPERMENOS, lexema, nlinea);
 		}
-		if(lexema.equals("*")){
+		if (lexema.equals("*")) {
 			T = new Token(Token.TOPERMULT, lexema, nlinea);
 		}
-		if(lexema.equals("(")){
+		if (lexema.equals("(")) {
 			T = new Token(Token.TPARENTA, lexema, nlinea);
 		}
-		if(lexema.equals(")")){
+		if (lexema.equals(")")) {
 			T = new Token(Token.TPARENTC, lexema, nlinea);
 		}
-		if(lexema.equals("[")){
+		if (lexema.equals("[")) {
 			T = new Token(Token.TCORA, lexema, nlinea);
 		}
-		if(lexema.equals("]")){
+		if (lexema.equals("]")) {
 			T = new Token(Token.TCORC, lexema, nlinea);
 		}
-		if(lexema.equals(":=")){
+		if (lexema.equals(":=")) {
 			T = new Token(Token.TASIGN, lexema, nlinea);
 		}
-		if(lexema.equals(".")){
+		if (lexema.equals(".")) {
 			T = new Token(Token.TPUNTO, lexema, nlinea);
 		}
-		if(lexema.equals(",")){
+		if (lexema.equals(",")) {
 			T = new Token(Token.TCOMA, lexema, nlinea);
 		}
-		if(lexema.equals(";")){
+		if (lexema.equals(";")) {
 			T = new Token(Token.TPUNTO_Y_COMA, lexema, nlinea);
 		}
-		if(lexema.equals(":")){
+		if (lexema.equals(":")) {
 			T = new Token(Token.TDOSPUNTOS, lexema, nlinea);
 		}
-		if(lexema.equals("'")){
+		if (lexema.equals("'")) {
 			T = new Token(Token.TCOMMILLA_SIMPLE, lexema, nlinea);
 		}
-		if(lexema.equals("..")){
+		if (lexema.equals("..")) {
 			T = new Token(Token.TDOBLEPUNTO, lexema, nlinea);
 		}
 		return T;
 	}
-	
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
 	// Construye o continua la construccion de un simbolo
-	// (secuencia pura de digitos)
-	private Token scanSimb(String lexema) {	
+	private Token scanSimb(String lexema) throws ExcepSimbNoValido, IOException {
 		lexema += caractual;
 		caractual = leerchar();
 		while (Posible_Simbolo_Compuesto(lexema) && Pattern.matches(RXSIMBOLO, String.valueOf(caractual)) && !eof) {
@@ -190,11 +184,11 @@ public class Lexer {
 		}
 		return identificar_simbolo(lexema);
 	}
-	
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
 	// Saltea todos los espacios, tabs y finales de linea
 	// Actualiza el numero de linea
-	private void scanEspacios() {
+	private void scanEspacios() throws ExcepSimbNoValido, IOException {
 		while (Pattern.matches("[ \t\n\r]", String.valueOf(caractual)) && !eof) {
 			if (Pattern.matches("[\n]", String.valueOf(caractual))) {
 				nlinea++;
@@ -202,13 +196,13 @@ public class Lexer {
 			caractual = leerchar();
 		}
 	}
-	
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
 	// Una vez leido el simbolo '{', saltea todo caracter a continuacion
 	// (incluyendo bajadas de linea y retorno de carro) hasta encontrar
 	// el simbolo '}'.
 	// En el caso de llegar a eof, lanza un excepción.
-	private void scanComentario() {
+	private void scanComentario() throws ExcepSimbNoValido, IOException, ExcepEOFCom {
 		int nlinc = nlinea;
 		while (matchbut(String.valueOf(caractual), "(.|[\n\r])", "[}]") && !eof) {
 			if (Pattern.matches("[\n]", String.valueOf(caractual))) {
@@ -219,7 +213,7 @@ public class Lexer {
 
 		// Llego a fin de linea en comentario
 		if (eof) {
-			System.out.println("Excepción: fin de linea en comentario. (Linea de inicio de comentario:" + nlinc + ")");
+			throw new ExcepEOFCom(nlinc);
 		}
 
 		// Termino el comentario
@@ -227,8 +221,8 @@ public class Lexer {
 			caractual = leerchar();
 		}
 	}
-	
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
 	// Filtra todas las palabras de P que comiencen con el caracter
 	// ini, y devuelve estas palabras sin ese caracter inicial.
 	private ArrayList<String> filtini(char ini, ArrayList<String> P) {
@@ -248,76 +242,76 @@ public class Lexer {
 		return Result;
 	}
 
-	//-------------------------------------------------------------------------
-	private Token identificar_palabra_reservada(String lexema){
+	// -------------------------------------------------------------------------
+	private Token identificar_palabra_reservada(String lexema) {
 		Token T = null;
-		
-		if (lexema.equals("if")){
+
+		if (lexema.equals("if")) {
 			return new Token(Token.TPALRES_IF, lexema, nlinea);
 		}
-		if(lexema.equals("then")){
+		if (lexema.equals("then")) {
 			return new Token(Token.TPALRES_THEN, lexema, nlinea);
 		}
-		if(lexema.equals("else")){
+		if (lexema.equals("else")) {
 			return new Token(Token.TPALRES_ELSE, lexema, nlinea);
 		}
-		if(lexema.equals("of")){
+		if (lexema.equals("of")) {
 			return new Token(Token.TPALRES_OF, lexema, nlinea);
 		}
-		if(lexema.equals("while")){
+		if (lexema.equals("while")) {
 			return new Token(Token.TPALRES_WHILE, lexema, nlinea);
 		}
-		if(lexema.equals("do")){
+		if (lexema.equals("do")) {
 			return new Token(Token.TPALRES_DO, lexema, nlinea);
 		}
-		if(lexema.equals("begin")){
+		if (lexema.equals("begin")) {
 			return new Token(Token.TPALRES_BEGIN, lexema, nlinea);
 		}
-		if(lexema.equals("end")){
+		if (lexema.equals("end")) {
 			return new Token(Token.TPALRES_END, lexema, nlinea);
 		}
-		if(lexema.equals("const")){
+		if (lexema.equals("const")) {
 			return new Token(Token.TPALRES_CONST, lexema, nlinea);
 		}
-		if(lexema.equals("var")){
+		if (lexema.equals("var")) {
 			return new Token(Token.TPALRES_VAR, lexema, nlinea);
 		}
-		if(lexema.equals("type")){
+		if (lexema.equals("type")) {
 			return new Token(Token.TPALRES_TYPE, lexema, nlinea);
 		}
-		if(lexema.equals("array")){
+		if (lexema.equals("array")) {
 			return new Token(Token.TPALRES_ARRAY, lexema, nlinea);
 		}
-		if(lexema.equals("function")){
+		if (lexema.equals("function")) {
 			return new Token(Token.TPALRES_FUNCTION, lexema, nlinea);
 		}
-		if(lexema.equals("program")){
+		if (lexema.equals("program")) {
 			return new Token(Token.TPALRES_PROGRAM, lexema, nlinea);
 		}
-		if(lexema.equals("procedure")){
+		if (lexema.equals("procedure")) {
 			return new Token(Token.TPALRES_PROCEDURE, lexema, nlinea);
 		}
-		if(lexema.equals("div")){
+		if (lexema.equals("div")) {
 			return new Token(Token.TOPERDIV, lexema, nlinea);
 		}
-		if(lexema.equals("and")){
+		if (lexema.equals("and")) {
 			return new Token(Token.TOPER_AND, lexema, nlinea);
 		}
-		if(lexema.equals("or")){
+		if (lexema.equals("or")) {
 			return new Token(Token.TOPER_OR, lexema, nlinea);
 		}
-		if(lexema.equals("not")){
+		if (lexema.equals("not")) {
 			return new Token(Token.TOPER_NOT, lexema, nlinea);
 		}
 		return T;
 	}
-	
-	//-------------------------------------------------------------------------
+
+	// -------------------------------------------------------------------------
 	// Luego de leer un caracter letra, determina si el proximo token
 	// es una palabra reservada del lenguaje, o si es un identificador
 	// (únicas dos posibilidades)
 	// Retorna el token correspondiente en cada caso.
-	private Token scanPR(ArrayList<String> Palabras, String lexema) {
+	private Token scanPR(ArrayList<String> Palabras, String lexema) throws ExcepSimbNoValido, IOException {
 		if (Palabras.size() > 0) {
 			HashSet<Character> Caracteres = new HashSet<Character>();
 			for (String palabra : Palabras) {
@@ -354,7 +348,7 @@ public class Lexer {
 				return scanIdent(lexema.toLowerCase());
 			}
 			if (Pattern.matches(RXNLOD, String.valueOf(caractual))) {
-				//esto hay que hacerlo en una funcion aparte.
+				// esto hay que hacerlo en una funcion aparte.
 				return identificar_palabra_reservada(lexema.toLowerCase());
 			}
 		}
@@ -363,8 +357,8 @@ public class Lexer {
 		return null;
 	}
 
-	//-------------------------------------------------------------------------
-	public Token nextToken() {
+	// -------------------------------------------------------------------------
+	public Token nextToken() throws ExcepIdentNoValid, ExcepSimbNoValido, IOException, ExcepEOFCom, ExcepComMalForm {
 		String lexema = "";
 
 		scanEspacios();
@@ -409,10 +403,16 @@ public class Lexer {
 				scanComentario();
 				return nextToken();
 			}
+			
+			// Si encuentro simbolo que cierra comentario, pero no estoy
+			// dentro de comentario, tiro la excepcion
+			if (Pattern.matches("[}]", String.valueOf(caractual))){
+				throw new ExcepComMalForm(nlinea);
+			}
 
 			// Cualquier otro caracter
 			// A Completar con los simbolos restantes
-			if (matchbut(String.valueOf(caractual), ".", "[a-zA-Z0-9{]")) {
+			if (matchbut(String.valueOf(caractual), ".", "[a-zA-Z0-9{}]")) {
 				return scanSimb(lexema);
 			}
 
@@ -423,12 +423,16 @@ public class Lexer {
 			return new Token(Token.TEOF, "<EOF>", nlinea);
 		}
 	}
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 	/**
 	 * @param args
-	 * @throws FileNotFoundException
+	 * @throws ExcepIdentNoValid
+	 * @throws IOException 
+	 * @throws ExcepSimbNoValido 
+	 * @throws ExcepEOFCom 
+	 * @throws ExcepComMalForm 
 	 */
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) throws ExcepIdentNoValid, ExcepSimbNoValido, IOException, ExcepEOFCom, ExcepComMalForm {
 		// TODO Auto-generated method stub
 		Lexer L = new Lexer("./Ejemplo1.pas");
 
@@ -439,5 +443,5 @@ public class Lexer {
 			System.out.println("Tipo: " + T.tipo + ", lexema:'" + T.lexema + "', numero de linea=" + T.nlinea + ".");
 		}
 	}
-	//-------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 }

@@ -19,6 +19,8 @@ procedure proce(var pv1,pv2:t1; pv3:integer);
 		if (pv1>pv3)
 			then pv1 := 3 - 4;
 	end;
+	
+	
 
 function funct(var fv1:integer; fv2:char):integer;
 	begin
