@@ -300,6 +300,15 @@ public class Lexer {
 		if(lexema.equals("div")){
 			return new Token(Token.TOPERDIV, lexema, nlinea);
 		}
+		if(lexema.equals("and")){
+			return new Token(Token.TOPER_AND, lexema, nlinea);
+		}
+		if(lexema.equals("or")){
+			return new Token(Token.TOPER_OR, lexema, nlinea);
+		}
+		if(lexema.equals("not")){
+			return new Token(Token.TOPER_NOT, lexema, nlinea);
+		}
 		return T;
 	}
 	
