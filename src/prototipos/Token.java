@@ -1,4 +1,4 @@
-package prototipos;
+package alexico;
 
 public class Token {
 	public static final int TPR = -2;

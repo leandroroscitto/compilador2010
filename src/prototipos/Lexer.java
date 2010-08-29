@@ -1,4 +1,4 @@
-package prototipos;
+package alexico;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -51,7 +51,7 @@ public class Lexer {
 		reader = new BufferedReader(isr);
 
 		nlinea = 1;
-		
+
 		// Crea la lista de palabras reservadas que detecta
 		Palabras = new ArrayList<String>();
 		Palabras.add("div");
@@ -90,7 +90,7 @@ public class Lexer {
 		} else {
 			eof = true;
 		}
-		
+
 		return c;
 	}
 	// -------------------------------------------------------------------------
@@ -387,7 +387,7 @@ public class Lexer {
 			if (!Pattern.matches(RXALFABETO, String.valueOf(caractual))) {
 				throw new ExcepSimbNoValido(caractual, nlinea);
 			}
-			
+
 			// Si lee una letra, es una palabra reservada o un
 			// identificador, no hay otra opción
 			if (Pattern.matches(RXLETRA, String.valueOf(caractual))) {
@@ -405,10 +405,10 @@ public class Lexer {
 				scanComentario();
 				return nextToken();
 			}
-			
+
 			// Si encuentro simbolo que cierra comentario, pero no estoy
 			// dentro de comentario, tiro la excepcion
-			if (Pattern.matches("[}]", String.valueOf(caractual))){
+			if (Pattern.matches("[}]", String.valueOf(caractual))) {
 				throw new ExcepComMalForm(nlinea);
 			}
 
@@ -429,12 +429,13 @@ public class Lexer {
 	/**
 	 * @param args
 	 * @throws ExcepIdentNoValid
-	 * @throws IOException 
-	 * @throws ExcepSimbNoValido 
-	 * @throws ExcepEOFCom 
-	 * @throws ExcepComMalForm 
+	 * @throws IOException
+	 * @throws ExcepSimbNoValido
+	 * @throws ExcepEOFCom
+	 * @throws ExcepComMalForm
 	 */
-	public static void main(String[] args) throws ExcepIdentNoValid, ExcepSimbNoValido, IOException, ExcepEOFCom, ExcepComMalForm {
+	public static void main(String[] args) throws ExcepIdentNoValid, ExcepSimbNoValido, IOException, ExcepEOFCom,
+			ExcepComMalForm {
 		// TODO Auto-generated method stub
 		Lexer L = new Lexer("./Ejemplo1.pas");
 
