@@ -14,7 +14,7 @@ public class Lexer {
 	private final String RXNLOD = "[^a-zA-Z0-9]";
 	private final String RXLETRA = "[a-zA-Z]";
 	private final String RXDIGITO = "[0-9]";
-	private final String RXALFABETO = "[a-zA-Z0-9+\\*-=<>()\\[\\].,;:'\t\n\r ]";
+	private final String RXALFABETO = "[a-zA-Z0-9+\\*-=<>()\\[\\]{}.,;:'\t\n\r ]";
 	private final String RXSIMBOLO = "[.=>]";
 
 
@@ -127,14 +127,14 @@ public class Lexer {
 		if (lexema.equals(">")){
 			T= new Token(Token.TSIMBOLO_MAYOR, lexema, nlinea);
 		}
-		if (lexema.equals("<>")){
-			T= new Token(Token.TSIMBOLO_DISTINTO, lexema, nlinea);
-		}
 		if(lexema.equals("<=")){
 			T = new Token(Token.TSIMBOLO_MENORIGUAL, lexema, nlinea);
 		}
 		if(lexema.equals(">=")){
 			T = new Token(Token.TSIMBOLO_MAYORIGUAL, lexema, nlinea);
+		}
+		if(lexema.equals("+")){
+			T = new Token(Token.TOPERMAS, lexema, nlinea);
 		}
 		if(lexema.equals("-")){
 			T = new Token(Token.TOPERMENOS, lexema, nlinea);
@@ -249,6 +249,61 @@ public class Lexer {
 	}
 
 	//-------------------------------------------------------------------------
+	private Token identificar_palabra_reservada(String lexema){
+		Token T = null;
+		
+		if (lexema.equals("if")){
+			return new Token(Token.TPALRES_IF, lexema, nlinea);
+		}
+		if(lexema.equals("then")){
+			return new Token(Token.TPALRES_THEN, lexema, nlinea);
+		}
+		if(lexema.equals("else")){
+			return new Token(Token.TPALRES_ELSE, lexema, nlinea);
+		}
+		if(lexema.equals("of")){
+			return new Token(Token.TPALRES_OF, lexema, nlinea);
+		}
+		if(lexema.equals("while")){
+			return new Token(Token.TPALRES_WHILE, lexema, nlinea);
+		}
+		if(lexema.equals("do")){
+			return new Token(Token.TPALRES_DO, lexema, nlinea);
+		}
+		if(lexema.equals("begin")){
+			return new Token(Token.TPALRES_BEGIN, lexema, nlinea);
+		}
+		if(lexema.equals("end")){
+			return new Token(Token.TPALRES_END, lexema, nlinea);
+		}
+		if(lexema.equals("const")){
+			return new Token(Token.TPALRES_CONST, lexema, nlinea);
+		}
+		if(lexema.equals("var")){
+			return new Token(Token.TPALRES_VAR, lexema, nlinea);
+		}
+		if(lexema.equals("type")){
+			return new Token(Token.TPALRES_TYPE, lexema, nlinea);
+		}
+		if(lexema.equals("array")){
+			return new Token(Token.TPALRES_ARRAY, lexema, nlinea);
+		}
+		if(lexema.equals("function")){
+			return new Token(Token.TPALRES_FUNCTION, lexema, nlinea);
+		}
+		if(lexema.equals("program")){
+			return new Token(Token.TPALRES_PROGRAM, lexema, nlinea);
+		}
+		if(lexema.equals("procedure")){
+			return new Token(Token.TPALRES_PROCEDURE, lexema, nlinea);
+		}
+		if(lexema.equals("div")){
+			return new Token(Token.TOPERDIV, lexema, nlinea);
+		}
+		return T;
+	}
+	
+	//-------------------------------------------------------------------------
 	// Luego de leer un caracter letra, determina si el proximo token
 	// es una palabra reservada del lenguaje, o si es un identificador
 	// (únicas dos posibilidades)
@@ -287,60 +342,11 @@ public class Lexer {
 		} else {
 			// Encontre una palabra reservada?
 			if (Pattern.matches(RXLOD, String.valueOf(caractual))) {
-				return scanIdent(lexema);
+				return scanIdent(lexema.toLowerCase());
 			}
 			if (Pattern.matches(RXNLOD, String.valueOf(caractual))) {
 				//esto hay que hacerlo en una funcion aparte.
-				if (lexema.equals("if")){
-					return new Token(Token.TPALRES_IF, lexema, nlinea);
-				}
-				if(lexema.equals("then")){
-					return new Token(Token.TPALRES_THEN, lexema, nlinea);
-				}
-				if(lexema.equals("else")){
-					return new Token(Token.TPALRES_ELSE, lexema, nlinea);
-				}
-				if(lexema.equals("of")){
-					return new Token(Token.TPALRES_OF, lexema, nlinea);
-				}
-				if(lexema.equals("while")){
-					return new Token(Token.TPALRES_WHILE, lexema, nlinea);
-				}
-				if(lexema.equals("do")){
-					return new Token(Token.TPALRES_DO, lexema, nlinea);
-				}
-				if(lexema.equals("begin")){
-					return new Token(Token.TPALRES_BEGIN, lexema, nlinea);
-				}
-				if(lexema.equals("end")){
-					return new Token(Token.TPALRES_END, lexema, nlinea);
-				}
-				if(lexema.equals("const")){
-					return new Token(Token.TPALRES_CONST, lexema, nlinea);
-				}
-				if(lexema.equals("var")){
-					return new Token(Token.TPALRES_VAR, lexema, nlinea);
-				}
-				if(lexema.equals("type")){
-					return new Token(Token.TPALRES_TYPE, lexema, nlinea);
-				}
-				if(lexema.equals("array")){
-					return new Token(Token.TPALRES_ARRAY, lexema, nlinea);
-				}
-				if(lexema.equals("fuction")){
-					return new Token(Token.TPALRES_FUNCTION, lexema, nlinea);
-				}
-				if(lexema.equals("program")){
-					return new Token(Token.TPALRES_PROGRAM, lexema, nlinea);
-				}
-				if(lexema.equals("procedure")){
-					return new Token(Token.TPALRES_PROCEDURE, lexema, nlinea);
-				}
-				if(lexema.equals("div")){
-					return new Token(Token.TOPERDIV, lexema, nlinea);
-				}
-
-				return new Token(Token.TPR, lexema, nlinea);
+				return identificar_palabra_reservada(lexema.toLowerCase());
 			}
 		}
 
@@ -398,10 +404,7 @@ public class Lexer {
 			// Cualquier otro caracter
 			// A Completar con los simbolos restantes
 			if (matchbut(String.valueOf(caractual), ".", "[a-zA-Z0-9{]")) {
-				//lexema += caractual;
-				//caractual = leerchar();
 				return scanSimb(lexema);
-				//return new Token(Token.TOTRO, lexema, nlinea);
 			}
 
 			// HUBO UN ERROR
