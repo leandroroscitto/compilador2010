@@ -64,11 +64,6 @@ public class Lexer {
 		if (reader.ready()) {
 			c = (char) reader.read();
 
-			// Si no esta en el alfabeto de entrada
-			// levanta una excepción
-			if (!Pattern.matches(RXALFABETO, String.valueOf(c))) {
-				throw new ExcepSimbNoValido(c, nlinea);
-			}
 		} else {
 			eof = true;
 		}
@@ -364,6 +359,12 @@ public class Lexer {
 		scanEspacios();
 
 		if (!eof) {
+			// Si no esta en el alfabeto de entrada
+			// levanta una excepción
+			if (!Pattern.matches(RXALFABETO, String.valueOf(caractual))) {
+				throw new ExcepSimbNoValido(caractual, nlinea);
+			}
+			
 			// Si lee una letra, es una palabra reservada o un
 			// identificador, no hay otra opción
 			if (Pattern.matches(RXLETRA, String.valueOf(caractual))) {
