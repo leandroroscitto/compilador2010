@@ -144,7 +144,7 @@ public class Principal {
 	
 	public static void main(String[] args) throws ExcepALexico, IOException {
 		if (args.length > 0) {
-			args[0] = "SimbNoVal.pas";
+			args[0] = "Ejemplo1.pas";
 			System.out.println("Archivo de entrada:'"+args[0]+"':");
 			System.out.println("====================================");
 			System.out.println();
