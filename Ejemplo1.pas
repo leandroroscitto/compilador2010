@@ -1,24 +1,33 @@
-program Nuevo;
-const c1 = 2;
+program Completo;
+const c1 = 20;
 		c2 = 'a';
-type t1 = c1..23;
-		t2 = 'a'..'b;
-		t3 = integer;
+type t1 = integer;
+	  t2 = 23 .. 30;
+	  t3 = array [3..4] of char;
 var v1 : t1;
-	v2:t3;
-	v3:char;
-	v4:array [1..2] of char;
-procedure pro1(var a1:integer;a2:t1);
-var pv1:t2;
-begin
-pv1:='c';
-end;
+	 v2 : integer;
+	 v3 : char;
+	 v4 : boolean;
 
-function mas(var a2:integer):integer;
-begin
-mas := 20*2;
-end;
+procedure proce(var pv1,pv2:t1; pv3:integer);
+	begin
+		if (12<=30)
+			then pv1 := 1 div 2;
+			else pv2 := 3 * 3;
+		if (pv1=pv2)
+			then pv3 := pv2 + 3;
+		if (pv1>pv3)
+			then pv1 := 3 - 4;
+	end;
+
+function funct(var fv1:integer; fv2:char):integer;
+	begin
+		if not((fv1=2) or (fv2='a'))
+			then funct:=2;
+		if ((fv2='r') and (fv1<>0))
+			then funct:=3;
+	end;
 
 begin
-mas(1);
+write(funct(1,'a')); {Creo que eso es todo}
 end.
