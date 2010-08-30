@@ -32,4 +32,4 @@ function funct(var fv1:integer; fv2:char):integer;
 
 begin
 write(funct(1,'a')); {Creo que eso es todo}
-end.
+END.
