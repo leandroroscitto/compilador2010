@@ -18,7 +18,7 @@ public class Lexer {
 	private final String RXNLOD = "[^a-zA-Z0-9]";
 	private final String RXLETRA = "[a-zA-Z]";
 	private final String RXDIGITO = "[0-9]";
-	private final String RXALFABETO = "[a-zA-Z0-9+\\*-=<>()\\[\\]{}.,;:'\t\n\r ]";
+	private final String RXALFABETO = "[a-zA-Z0-9+*\\-=<>()\\[\\]{}.,;:'\t\n\r ]";
 	private final String RXSIMBOLO = "[.=>]";
 
 	char caractual;
@@ -438,7 +438,7 @@ public class Lexer {
 	public static void main(String[] args) throws ExcepIdentNoValid, ExcepSimbNoValido, IOException, ExcepEOFCom,
 			ExcepComMalForm {
 		// TODO Auto-generated method stub
-		Lexer L = new Lexer("./Ejemplo1.pas");
+		Lexer L = new Lexer("./ALUMNOS.pas");
 
 		Token T = L.nextToken();
 		System.out.println("Tipo: " + T.tipo + ", lexema:'" + T.lexema + "', numero de linea=" + T.nlinea + ".");
