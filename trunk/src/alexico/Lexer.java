@@ -263,62 +263,63 @@ public class Lexer {
 	// -------------------------------------------------------------------------
 	private Token identificar_palabra_reservada(String lexema) {
 		Token T = null;
+		String lexemaminusc = lexema.toLowerCase();
 
-		if (lexema.equals("if")) {
+		if (lexemaminusc.equals("if")) {
 			return new Token(Token.TPALRES_IF, lexema, nlinea);
 		}
-		if (lexema.equals("then")) {
+		if (lexemaminusc.equals("then")) {
 			return new Token(Token.TPALRES_THEN, lexema, nlinea);
 		}
-		if (lexema.equals("else")) {
+		if (lexemaminusc.equals("else")) {
 			return new Token(Token.TPALRES_ELSE, lexema, nlinea);
 		}
-		if (lexema.equals("of")) {
+		if (lexemaminusc.equals("of")) {
 			return new Token(Token.TPALRES_OF, lexema, nlinea);
 		}
-		if (lexema.equals("while")) {
+		if (lexemaminusc.equals("while")) {
 			return new Token(Token.TPALRES_WHILE, lexema, nlinea);
 		}
-		if (lexema.equals("do")) {
+		if (lexemaminusc.equals("do")) {
 			return new Token(Token.TPALRES_DO, lexema, nlinea);
 		}
-		if (lexema.equals("begin")) {
+		if (lexemaminusc.equals("begin")) {
 			return new Token(Token.TPALRES_BEGIN, lexema, nlinea);
 		}
-		if (lexema.equals("end")) {
+		if (lexemaminusc.equals("end")) {
 			return new Token(Token.TPALRES_END, lexema, nlinea);
 		}
-		if (lexema.equals("const")) {
+		if (lexemaminusc.equals("const")) {
 			return new Token(Token.TPALRES_CONST, lexema, nlinea);
 		}
-		if (lexema.equals("var")) {
+		if (lexemaminusc.equals("var")) {
 			return new Token(Token.TPALRES_VAR, lexema, nlinea);
 		}
-		if (lexema.equals("type")) {
+		if (lexemaminusc.equals("type")) {
 			return new Token(Token.TPALRES_TYPE, lexema, nlinea);
 		}
-		if (lexema.equals("array")) {
+		if (lexemaminusc.equals("array")) {
 			return new Token(Token.TPALRES_ARRAY, lexema, nlinea);
 		}
-		if (lexema.equals("function")) {
+		if (lexemaminusc.equals("function")) {
 			return new Token(Token.TPALRES_FUNCTION, lexema, nlinea);
 		}
-		if (lexema.equals("program")) {
+		if (lexemaminusc.equals("program")) {
 			return new Token(Token.TPALRES_PROGRAM, lexema, nlinea);
 		}
-		if (lexema.equals("procedure")) {
+		if (lexemaminusc.equals("procedure")) {
 			return new Token(Token.TPALRES_PROCEDURE, lexema, nlinea);
 		}
-		if (lexema.equals("div")) {
+		if (lexemaminusc.equals("div")) {
 			return new Token(Token.TOPERDIV, lexema, nlinea);
 		}
-		if (lexema.equals("and")) {
+		if (lexemaminusc.equals("and")) {
 			return new Token(Token.TOPER_AND, lexema, nlinea);
 		}
-		if (lexema.equals("or")) {
+		if (lexemaminusc.equals("or")) {
 			return new Token(Token.TOPER_OR, lexema, nlinea);
 		}
-		if (lexema.equals("not")) {
+		if (lexemaminusc.equals("not")) {
 			return new Token(Token.TOPER_NOT, lexema, nlinea);
 		}
 		return T;
@@ -367,7 +368,7 @@ public class Lexer {
 			}
 			if (Pattern.matches(RXNLOD, String.valueOf(caractual))) {
 				// esto hay que hacerlo en una funcion aparte.
-				return identificar_palabra_reservada(lexema.toLowerCase());
+				return identificar_palabra_reservada(lexema);
 			}
 		}
 
