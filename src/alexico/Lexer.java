@@ -5,12 +5,15 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Pattern;
 
+import excepciones.ExcepALexico;
 import excepciones.ExcepComMalForm;
 import excepciones.ExcepEOFCom;
-import excepciones.ExcepIdentNoValid;
+import excepciones.ExcepIdentNoValido;
 import excepciones.ExcepSimbNoValido;
 
 public class Lexer {
@@ -21,11 +24,11 @@ public class Lexer {
 	private final String RXALFABETO = "[a-zA-Z0-9+*\\-=<>()\\[\\]{}.,;:'\t\n\r ]";
 	private final String RXSIMBOLO = "[.=>]";
 
-	char caractual;
+	public char caractual;
 	public int nlinea;
-	boolean eof = false;
-	ArrayList<String> Palabras;
-	BufferedReader reader;
+	public boolean eof = false;
+	private List<String> Palabras;
+	private BufferedReader reader;
 
 	// -------------------------------------------------------------------------
 	// Dada una cadena input (representación de string de un char)
@@ -53,26 +56,8 @@ public class Lexer {
 		nlinea = 1;
 
 		// Crea la lista de palabras reservadas que detecta
-		Palabras = new ArrayList<String>();
-		Palabras.add("div");
-		Palabras.add("or");
-		Palabras.add("and");
-		Palabras.add("not");
-		Palabras.add("if");
-		Palabras.add("then");
-		Palabras.add("else");
-		Palabras.add("of");
-		Palabras.add("while");
-		Palabras.add("do");
-		Palabras.add("begin");
-		Palabras.add("end");
-		Palabras.add("const");
-		Palabras.add("var");
-		Palabras.add("type");
-		Palabras.add("array");
-		Palabras.add("function");
-		Palabras.add("procedure");
-		Palabras.add("program");
+		Palabras = Arrays.asList("div", "or", "and", "not", "if", "then", "else", "of", "while", "do", "begin", "end",
+				"const", "var", "type", "array", "function", "procedure", "program");
 
 		// Lee un caracter, para estar siempre uno adelantado
 		caractual = leerchar();
@@ -107,7 +92,7 @@ public class Lexer {
 	// -------------------------------------------------------------------------
 	// Construye o continua la construccion de un numero
 	// (secuencia pura de digitos)
-	private Token scanNum(String lexema) throws ExcepIdentNoValid, ExcepSimbNoValido, IOException {
+	private Token scanNum(String lexema) throws ExcepIdentNoValido, ExcepSimbNoValido, IOException {
 		lexema += caractual;
 		caractual = leerchar();
 		while (Pattern.matches(RXDIGITO, String.valueOf(caractual)) && !eof) {
@@ -115,7 +100,7 @@ public class Lexer {
 			caractual = leerchar();
 		}
 		if (Pattern.matches(RXLETRA, String.valueOf(caractual))) {
-			throw new ExcepIdentNoValid(nlinea);
+			throw new ExcepIdentNoValido(nlinea);
 		}
 		return new Token(Token.TNUMERO, lexema, nlinea);
 	}
@@ -243,7 +228,7 @@ public class Lexer {
 	// -------------------------------------------------------------------------
 	// Filtra todas las palabras de P que comiencen con el caracter
 	// ini, y devuelve estas palabras sin ese caracter inicial.
-	private ArrayList<String> filtini(char ini, ArrayList<String> P) {
+	private List<String> filtini(char ini, List<String> P) {
 		ArrayList<String> Result = new ArrayList<String>();
 
 		for (String palabra : P) {
@@ -330,7 +315,7 @@ public class Lexer {
 	// es una palabra reservada del lenguaje, o si es un identificador
 	// (únicas dos posibilidades)
 	// Retorna el token correspondiente en cada caso.
-	private Token scanPR(ArrayList<String> Palabras, String lexema) throws ExcepSimbNoValido, IOException {
+	private Token scanPR(List<String> Palabras, String lexema) throws ExcepSimbNoValido, IOException {
 		if (Palabras.size() > 0) {
 			HashSet<Character> Caracteres = new HashSet<Character>();
 			for (String palabra : Palabras) {
@@ -354,30 +339,37 @@ public class Lexer {
 			// Leo un caracter alfanum distinto de los primeros caracteres de las
 			// palabras reservadas
 			if (Pattern.matches(RXLOD, String.valueOf(caractual)) && (!Caracteres.contains(caractual))) {
+				// En el caso de una letra o digito, es un identificador, busco si
+				// hay mas letras o digitos
 				return scanIdent(lexema);
 			}
 			if (Pattern.matches(RXNLOD, String.valueOf(caractual))) {
+				// Si no es letra o digito, lo que ya leí no forma una palabra
+				// reservada, asi que es un identificador
 				return new Token(Token.TIDENTIFICADOR, lexema, nlinea);
 			}
-			// CONROLAR QUE EL SIMBOLO ESTE DENTRO DEL ALFABETO
-			// (VER HACERLO DIRECTAMENTE EN leerchar())
 		} else {
 			// Encontre una palabra reservada?
 			if (Pattern.matches(RXLOD, String.valueOf(caractual))) {
+				// Si sigo leyendo letras o digitos, entonces no, es un
+				// identificador
 				return scanIdent(lexema.toLowerCase());
 			}
 			if (Pattern.matches(RXNLOD, String.valueOf(caractual))) {
-				// esto hay que hacerlo en una funcion aparte.
+				// En el caso de que no sea letra o digito, ya encontre una palabra
+				// reservada
+				// La identifico segun su lexema
 				return identificar_palabra_reservada(lexema);
 			}
 		}
 
 		// Caso contrario que siga el nextToken
+		// Nunca llegaría a este punto
 		return null;
 	}
 
 	// -------------------------------------------------------------------------
-	public Token nextToken() throws ExcepIdentNoValid, ExcepSimbNoValido, IOException, ExcepEOFCom, ExcepComMalForm {
+	public Token nextToken() throws ExcepALexico, IOException {
 		String lexema = "";
 
 		scanEspacios();
@@ -420,31 +412,12 @@ public class Lexer {
 			}
 
 			// HUBO UN ERROR
+			// No debería llegar aca
 			return new Token(-1, "ERROR", nlinea);
 		} else {
-			// PARA INDICAR NOMAS, CAMBIAR
+			// PARA INDICAR NOMAS
+			// Lo captura por el atributo eof
 			return new Token(Token.TEOF, "<EOF>", nlinea);
-		}
-	}
-	// -------------------------------------------------------------------------
-	/**
-	 * @param args
-	 * @throws ExcepIdentNoValid
-	 * @throws IOException
-	 * @throws ExcepSimbNoValido
-	 * @throws ExcepEOFCom
-	 * @throws ExcepComMalForm
-	 */
-	public static void main(String[] args) throws ExcepIdentNoValid, ExcepSimbNoValido, IOException, ExcepEOFCom,
-			ExcepComMalForm {
-		// TODO Auto-generated method stub
-		Lexer L = new Lexer("./ALUMNOS.pas");
-
-		Token T = L.nextToken();
-		System.out.println("Tipo: " + T.tipo + ", lexema:'" + T.lexema + "', numero de linea=" + T.nlinea + ".");
-		while (T.tipo != Token.TEOF) {
-			T = L.nextToken();
-			System.out.println("Tipo: " + T.tipo + ", lexema:'" + T.lexema + "', numero de linea=" + T.nlinea + ".");
 		}
 	}
 	// -------------------------------------------------------------------------

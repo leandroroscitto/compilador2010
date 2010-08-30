@@ -1,10 +1,10 @@
 package principal;
 
 import java.io.IOException;
+import java.io.PrintStream;
 
 import alexico.Lexer;
 import alexico.Token;
-
 import excepciones.ExcepALexico;
 
 public class Principal {
@@ -144,38 +144,46 @@ public class Principal {
 
 	public static void main(String[] args) throws ExcepALexico {
 		if (args.length > 0) {
-			System.out.println("Archivo de entrada:'" + args[0] + "':");
-			System.out.println("====================================");
-			System.out.println();
+			PrintStream Salida;
+			try {
+				if (args.length == 1) {
+					// Hay un solo argumento, lo considero el archivo de entrada
+					// La salida es por pantalla
+					Salida = System.out;
+				} else {
+					// Hay al menos 2 argumentos, el primero es el archivo de entrada
+					// y el segundo el de salida
+					Salida = new PrintStream(args[1]);
+				}
+				Salida.println("Archivo de entrada:'" + args[0] + "':");
+				Salida.println("====================================");
+				Salida.println();
 
-			try{
-			// Considera el primer paramatro de entrada
-			// como el nombre del archivo de entrada
-			// y ignora el resto
-			Lexer ALexico = new Lexer(args[0]);
+				// Considera el primer paramatro de entrada
+				// como el nombre del archivo de entrada
+				Lexer ALexico = new Lexer(args[0]);
 
-			// Lee el primer token
-			Token tok = ALexico.nextToken();
+				// Lee el primer token
+				Token tok = ALexico.nextToken();
 
-			// Y mientas no sea fin de archivo
-			// sigue leyendo y mostrando por pantalla
-			while (tok.tipo != Token.TEOF) {
+				// Y mientas no sea fin de archivo
+				// sigue leyendo y mostrando por pantalla
+				while (!ALexico.eof) {
+					Salida.println("Tipo del token:" + getNombreT(tok.tipo) + ", lexema:'" + tok.lexema
+							+ "', numero de linea:" + tok.nlinea + ".");
+					Salida.println("________________________________________________________________________________");
+					// Lee el proximo token
+					tok = ALexico.nextToken();
+				}
 
-				System.out.println("Tipo del token:" + getNombreT(tok.tipo) + ", lexema:'" + tok.lexema
-						+ "', numero de linea:" + tok.nlinea + ".");
-				System.out.println("________________________________________________________________________________");
-				// Lee el proximo token
-				tok = ALexico.nextToken();
-			}
-			} catch (IOException e){
+				Salida.println();
+				Salida.println("El proceso se completo con exito.");
+			} catch (IOException e) {
 				System.out.println("IOException capturada, no se pudo leer del archivo.");
 			}
-
-			System.out.println();
-			System.out.println("El proceso se completo con exito.");
 		} else {
 			// Faltó el parametro de entrada
-			System.out.println("De como parámetro al menos un nombre para el archivo de entrada.");
+			System.out.println("De como parametro al menos un nombre para el archivo de entrada.");
 		}
 	}
 }
