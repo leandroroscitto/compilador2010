@@ -43,8 +43,9 @@ public class Token {
 	public static final int TCOMA = 37;
 	public static final int TPUNTO_Y_COMA = 38;
 	public static final int TDOSPUNTOS = 39;
-	public static final int TCOMMILLA_SIMPLE = 40;
+	// public static final int TCOMMILLA_SIMPLE = 40;
 	public static final int TDOBLEPUNTO = 41;
+	public static final int TCARACTER = 42;
 
 	public int tipo;
 	public String lexema;

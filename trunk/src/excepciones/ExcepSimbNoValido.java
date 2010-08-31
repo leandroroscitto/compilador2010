@@ -7,7 +7,7 @@ public class ExcepSimbNoValido extends ExcepALexico {
 	public char simbolo;
 
 	public ExcepSimbNoValido(char car, int nlin) {
-		super("Simbolo no valido:'" + car + "' en la linea " + nlin + ".", nlin);
+		super("Simbolo no valido:'" + car + "' en la linea: " + nlin + ".", nlin);
 		simbolo = car;
 	}
 }
