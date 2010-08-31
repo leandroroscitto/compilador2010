@@ -8,6 +8,7 @@ import alexico.Token;
 import excepciones.ExcepALexico;
 
 public class Principal {
+	// Retorna el nombre de un tipo de token, según su codigo
 	public static String getNombreT(int TToken) {
 		String nombre = "";
 
@@ -81,9 +82,9 @@ public class Principal {
 			case Token.TDOSPUNTOS :
 				nombre = "TDOSPUNTOS";
 				break;
-			case Token.TCOMMILLA_SIMPLE :
-				nombre = "TCOMMILLA_SIMPLE";
-				break;
+			// case Token.TCOMMILLA_SIMPLE :
+			// nombre = "TCOMMILLA_SIMPLE";
+			// break;
 			case Token.TDOBLEPUNTO :
 				nombre = "TDOBLEPUNTO";
 				break;
@@ -135,6 +136,9 @@ public class Principal {
 			case Token.TOPERDIV :
 				nombre = "TOPERDIV";
 				break;
+			case Token.TCARACTER :
+				nombre = "TCARACTER";
+				break;
 			default :
 				nombre = String.valueOf(TToken);
 		}
@@ -168,7 +172,7 @@ public class Principal {
 
 				// Y mientas no sea fin de archivo
 				// sigue leyendo y mostrando por pantalla
-				while (!ALexico.eof) {
+				while (tok.tipo != Token.TEOF) {
 					Salida.println("Tipo del token:" + getNombreT(tok.tipo) + ", lexema:'" + tok.lexema
 							+ "', numero de linea:" + tok.nlinea + ".");
 					Salida.println("________________________________________________________________________________");
