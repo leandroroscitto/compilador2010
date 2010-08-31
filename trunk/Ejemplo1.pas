@@ -20,6 +20,7 @@ procedure proce(var pv1,pv2:t1; pv3:integer);
 			then pv1:=3-4;
 	end;
 	
+write  ('SOLO MINUSCULA.....S======>>');
 	
 
 function funct(var fv1:integer; fv2:char):integer;
