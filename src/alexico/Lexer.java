@@ -22,7 +22,7 @@ public class Lexer {
 	private final String RXLETRA = "[a-zA-Z]";
 	private final String RXDIGITO = "[0-9]";
 	private final String RXALFABETO = "[a-zA-Z0-9+*\\-=<>()\\[\\]{}.,;:'\t\n\r ]";
-	private final String RXSIMBOLO = "[.=>]";
+	//private final String RXSIMBOLO = "[.=]";
 
 	public char caractual;
 	public int nlinea;
@@ -75,7 +75,6 @@ public class Lexer {
 		} else {
 			eof = true;
 		}
-
 		return c;
 	}
 	// -------------------------------------------------------------------------
@@ -106,6 +105,7 @@ public class Lexer {
 	}
 
 	// -------------------------------------------------------------------------
+	@SuppressWarnings("unused")
 	private boolean Posible_Simbolo_Compuesto(String lexema) {
 		return (lexema.equals("<") || lexema.equals(">") || lexema.equals(".") || lexema.equals(":"));
 	}
@@ -173,6 +173,7 @@ public class Lexer {
 		if (lexema.equals("..")) {
 			T = new Token(Token.TDOBLEPUNTO, lexema, nlinea);
 		}
+
 		return T;
 	}
 
@@ -181,13 +182,15 @@ public class Lexer {
 	private Token scanSimb(String lexema) throws ExcepSimbNoValido, IOException {
 		lexema += caractual;
 		caractual = leerchar();
-		while (Posible_Simbolo_Compuesto(lexema) && Pattern.matches(RXSIMBOLO, String.valueOf(caractual)) && !eof) {
+		String lexematmp = lexema + caractual;
+		if (Pattern.matches("<>|<=|>=|:=|\\.\\.", lexematmp) && !eof) {
 			lexema += caractual;
 			caractual = leerchar();
+			return identificar_simbolo(lexematmp);
+		} else {
+			return identificar_simbolo(lexema);
 		}
-		return identificar_simbolo(lexema);
 	}
-
 	// -------------------------------------------------------------------------
 	// Saltea todos los espacios, tabs y finales de linea
 	// Actualiza el numero de linea
