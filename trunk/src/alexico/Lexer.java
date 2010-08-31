@@ -331,7 +331,7 @@ public class Lexer {
 
 	// Una vez leida una comilla simple, determina si se trata de un caracter
 	// valido, o sea un solo simbolo delimitado por dos comillas simples
-	private Token scanCaracter() throws IOException, ExcepCaracMalForm, ExcepSimbNoValido {
+	private Token scanCar() throws IOException, ExcepCaracMalForm, ExcepSimbNoValido {
 		// Ya leyo una comilla simple, espera leer un solo caracter
 		// Cualquier caracter entre los codigos ASCII 32 y 126
 		caractual = leerchar();
@@ -440,7 +440,7 @@ public class Lexer {
 
 			// Si leo una comilla simple, es el posible inicio de un caracter
 			if (Pattern.matches("[']", String.valueOf(caractual))) {
-				return scanCaracter();
+				return scanCar();
 			}
 
 			// Leo {, inicio de comentario
