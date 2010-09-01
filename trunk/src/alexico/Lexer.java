@@ -17,16 +17,15 @@ import excepciones.ExcepEOFCom;
 import excepciones.ExcepIdentNoValido;
 import excepciones.ExcepSimbNoValido;
 
-// TODO: Comentario de otro tipo (* Comentario *)
-// TODO: Considerar como compienza el comentario en scanComentario
-
 public class Lexer {
 	private final String RXLOD = "[a-zA-Z0-9]";
 	private final String RXNLOD = "[^a-zA-Z0-9]";
 	private final String RXLETRA = "[a-zA-Z]";
 	private final String RXDIGITO = "[0-9]";
 	private final String RXALFABETO = "[a-zA-Z0-9+*\\-=<>()\\[\\]{}.,;:'\t\n\r ]";
-	// private final String RXSIMBOLO = "[.=]";
+	
+	private final int TCOMENTLLAVE = 0;
+	private final int TCOMENTPARENT = 1;
 
 	private char caractual;
 	private int nlinea;
@@ -248,7 +247,7 @@ public class Lexer {
 	private Token scanIdent(String lexema) throws IOException {
 		lexema += caractual;
 		caractual = leerchar();
-		while (Pattern.matches(RXLOD, String.valueOf(caractual)) && !eof) {
+		while (!eof && Pattern.matches(RXLOD, String.valueOf(caractual))) {
 			lexema += caractual;
 			caractual = leerchar();
 		}
@@ -262,7 +261,7 @@ public class Lexer {
 	private Token scanNum(String lexema) throws ExcepIdentNoValido, IOException {
 		lexema += caractual;
 		caractual = leerchar();
-		while (Pattern.matches(RXDIGITO, String.valueOf(caractual)) && !eof) {
+		while (!eof && Pattern.matches(RXDIGITO, String.valueOf(caractual))) {
 			lexema += caractual;
 			caractual = leerchar();
 		}
@@ -279,8 +278,8 @@ public class Lexer {
 		lexema += caractual;
 		caractual = leerchar();
 		String lexematmp = lexema + caractual;
-		if (Pattern.matches("<>|<=|>=|:=|\\.\\.", lexematmp) && !eof) {
-			lexema += caractual;
+		if (!eof && Pattern.matches("<>|<=|>=|:=|\\.\\.", lexematmp)) {
+			// lexema += caractual;
 			caractual = leerchar();
 			return identificar_simbolo(lexematmp);
 		} else {
@@ -293,7 +292,7 @@ public class Lexer {
 	// Saltea todos los espacios, tabs y finales de linea
 	// Actualiza el numero de linea
 	private void scanEspacios() throws IOException {
-		while (Pattern.matches("[ \t\n\r]", String.valueOf(caractual)) && !eof) {
+		while (!eof && Pattern.matches("[ \t\n\r]", String.valueOf(caractual))) {
 			if (Pattern.matches("[\n]", String.valueOf(caractual))) {
 				nlinea++;
 			}
@@ -307,24 +306,42 @@ public class Lexer {
 	// (incluyendo bajadas de linea y retorno de carro) hasta encontrar
 	// el simbolo '}'.
 	// En el caso de llegar a eof, lanza un excepción.
-	private void scanComentario() throws IOException, ExcepEOFCom {
+	private void scanComentario(int tipo) throws IOException, ExcepEOFCom {
 		int nlinc = nlinea;
-		while (matchbut(String.valueOf(caractual), "(.|[\n\r])", "[}]") && !eof) {
+		boolean salir = false;
+		
+		while (!salir && !eof) {
+			// Cada vez que se lee un fin de linea, aumenta el numero de linea
 			if (Pattern.matches("[\n]", String.valueOf(caractual))) {
 				nlinea++;
 			}
-			caractual = leerchar();
+
+			// Si lee un simbolo { y se comenzo con }, termino el comentario
+			if ((caractual == '}') && (tipo == TCOMENTLLAVE)) {
+				caractual = leerchar();
+				salir = true;
+			}
+
+			// Si lee un simbolo * seguido de ) y se comenzo con (*, termino el
+			// comentario
+			if ((caractual == '*') && (tipo == TCOMENTPARENT)) {
+				caractual = leerchar();
+				if (!eof && (caractual == ')')) {
+					caractual = leerchar();
+					salir = true;
+				}
+			}
+
+			if (!salir && !eof) {
+				caractual = leerchar();
+			}
 		}
 
 		// Llego a fin de linea en comentario
-		if (eof) {
+		if (!salir && eof) {
 			throw new ExcepEOFCom(nlinc);
 		}
-
-		// Termino el comentario
-		if (Pattern.matches("[}]", String.valueOf(caractual))) {
-			caractual = leerchar();
-		}
+		
 	}
 
 	// -------------------------------------------------------------------------
@@ -439,29 +456,61 @@ public class Lexer {
 			}
 
 			// Si leo una comilla simple, es el posible inicio de un caracter
-			if (Pattern.matches("[']", String.valueOf(caractual))) {
+			if (caractual == '\'') {
 				return scanCar();
 			}
 
 			// Leo {, inicio de comentario
-			if (Pattern.matches("[{]", String.valueOf(caractual))) {
-				scanComentario();
+			if (caractual == '{') {
+				caractual = leerchar();
+				scanComentario(TCOMENTLLAVE);
 				return nextToken();
+			}
+
+			// Leo (, si el proximo caracter es *, entonces es el inicio de un
+			// comentario
+			if (caractual == '(') {
+				lexema += caractual;
+				caractual = leerchar();
+				if (caractual == '*') {
+					caractual = leerchar();
+					scanComentario(TCOMENTPARENT);
+					return nextToken();
+				} else {
+					// En el caso de que el proximo caracter no sea *, entonces
+					// devuelve el token de tipo parentesis abierto
+					return new Token(Token.TPARENTA, lexema, nlinea);
+				}
 			}
 
 			// Si encuentro simbolo que cierra comentario, pero no estoy dentro de
 			// comentario, tiro la excepcion
-			if (Pattern.matches("[}]", String.valueOf(caractual))) {
+			if (caractual == '}') {
 				throw new ExcepComMalForm(nlinea);
 			}
 
+			// Si encuentro *, y si el proximo simbolo es ), es un comentario mal
+			// formado
+			if (caractual == '*') {
+				lexema += caractual;
+				caractual = leerchar();
+				if (caractual == ')') {
+					throw new ExcepComMalForm(nlinea);
+				} else {
+					// Si no leo un ) despues de *, devuelve el token de tipo
+					// operador multiplicación
+					return new Token(Token.TOPERMULT, lexema, nlinea);
+				}
+			}
+
 			// Cualquier otro caracter
-			if (matchbut(String.valueOf(caractual), ".", "[a-zA-Z0-9{}']")) {
+			if (matchbut(String.valueOf(caractual), ".", "[a-zA-Z0-9{}(*']")) {
 				return scanSimb(lexema);
 			}
 
 			// HUBO UN ERROR
 			// Nunca debería llegar aca
+			System.out.println(caractual + "," + lexema);
 			return new Token(-1, "ERROR", nlinea);
 		} else {
 			// Llego al final de linea, devuelve el token correspondiente
