@@ -173,6 +173,9 @@ public class Principal {
 				// Y mientas no sea fin de archivo
 				// sigue leyendo y mostrando por pantalla
 				while (tok.tipo != Token.TEOF) {
+					if (tok.tipo == -1){
+						throw new ExcepALexico("Error no determinado", tok.nlinea);
+					}
 					Salida.println("Tipo del token:" + getNombreT(tok.tipo) + ", lexema:'" + tok.lexema
 							+ "', numero de linea:" + tok.nlinea + ".");
 					Salida.println("________________________________________________________________________________");
