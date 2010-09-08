@@ -208,6 +208,16 @@ public class Parser {
         }
     }
 
+    public boolean definicion_de_tipoP() throws ExcepALexico, IOException, ExcepASintatico {
+        if (TActual.tipo == Token.TSIMBOLO_IGUAL) {
+            leerToken();
+            tipo();
+            return true;
+        } else {
+            throw new ExcepASintatico("Se esperaba un simbolo igual en la definicion de tipo.", TActual.nlinea, TActual);
+        }
+    }
+
     public boolean declaracion_de_variable() throws ExcepASintatico, ExcepALexico, IOException {
         if (TActual.tipo == Token.TIDENTIFICADOR) {
             leerToken();
@@ -221,6 +231,17 @@ public class Parser {
             }
         } else {
             throw new ExcepASintatico("Se esperaba un identificador en la declaracion de variable.", TActual.nlinea, TActual);
+        }
+    }
+
+    public boolean declaracion_de_variableP() throws ExcepASintatico, ExcepALexico, IOException {
+        siguiente_identificador();
+        if (TActual.tipo == Token.TDOSPUNTOS) {
+            leerToken();
+            tipo();
+            return true;
+        } else {
+            throw new ExcepASintatico("Se esperaba ':' en la declaracion de variable.", TActual.nlinea, TActual);
         }
     }
 
@@ -380,14 +401,68 @@ public class Parser {
         }
     }
 
-    public boolean parte_de_definicion_de_tipos() {
-        // TODO: Terminar
-        return true;
+    public boolean parte_de_definicion_de_tipos() throws ExcepALexico, IOException, ExcepASintatico {
+        if (TActual.tipo == Token.TPALRES_TYPE) {
+            leerToken();
+            definicion_de_tipo();
+            if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+                leerToken();
+                sig_definicion_de_tipo();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un punto y coma al final de la definicion de tipo.", TActual.nlinea, TActual);
+            }
+        } else {
+            return true;
+        }
     }
 
-    public boolean parte_de_declaracion_de_variables() {
-        // TODO: Terminar
-        return true;
+    public boolean sig_definicion_de_tipo() throws ExcepASintatico, ExcepALexico, IOException {
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            leerToken();
+            definicion_de_tipoP();
+            if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+                leerToken();
+                sig_definicion_de_tipo();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un punto y coma al final de la definicion de tipo.", TActual.nlinea, TActual);
+            }
+        } else {
+            return true;
+        }
+    }
+
+    public boolean parte_de_declaracion_de_variables() throws ExcepALexico, IOException, ExcepASintatico {
+        if (TActual.tipo == Token.TPALRES_VAR) {
+            leerToken();
+            declaracion_de_variable();
+            if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+                leerToken();
+                sig_declaracion_de_variable();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un punto y coma al final de la declaracion de variable.", TActual.nlinea, TActual);
+            }
+        } else {
+            return true;
+        }
+    }
+
+    public boolean sig_declaracion_de_variable() throws ExcepASintatico, ExcepALexico, IOException {
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            leerToken();
+            declaracion_de_variableP();
+            if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+                leerToken();
+                sig_declaracion_de_variable();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un punto y coma al final de la declaracion de variable.", TActual.nlinea, TActual);
+            }
+        } else {
+            return true;
+        }
     }
 
     public boolean parte_de_declaracion_de_funciones_y_procedimientos() {
