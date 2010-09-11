@@ -431,7 +431,7 @@ public class Parser {
         	sentencia_estructurada();
         	return true;
         }
-		throw new ExcepASintatico("Se esperaba 'BEGIN', 'if' , o 'while' al comienzo de una sentencia estructurada.", TActual.nlinea, TActual);
+		throw new ExcepASintatico("Se esperaba una sentencia simple o una sentencia estructurada validas.", TActual.nlinea, TActual);
 
     }
 
