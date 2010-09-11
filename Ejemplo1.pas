@@ -7,11 +7,11 @@ type t1=integer;
 	t3= array[3..as4] of char;
 var v1:t1;
 	 v2:integer;
-	 :char;
+	 v4:char;
 	 v4:boolean;
 
 (* PROCEDURE *)
-{
+
 procedure proce(var pv1,pv2:t1; pv3:integer);
 const c1=c2;
       c2='a';
@@ -24,7 +24,7 @@ var v1:t1;
 	 v3:char;
 	 v4:boolean;
 	begin
-                while (2=3) do
+               { while (2=3) do
                     begin
                     dop:=2;
                     if(12<=30)
@@ -36,7 +36,7 @@ var v1:t1;
 		if (pv1=pv2)
 			then pv3:=pv2+3;
 		if (pv1>pv3)
-			then pv1:=3-4;
+			then pv1:=3-4;}
 	end;
 
 function funct(pv1:integer; var p2:char):car;
@@ -50,13 +50,13 @@ var v1:t1;
 	 v2:integer;
 	 v3:char;
 	 v4:boolean;
-	begin
+	begin{
 		if not((fv1=2)or(fv2='a'))
 			then funct:=2;
 		if ((fv2='r')and(fv1<>0))
 			then funct:=3;
-	end;
+	}end;
 
 Begin
-write(funct(1,'a')); {Creo que eso es todo}
-{END.}
+{write(funct(1,'a')); {Creo que eso es todo}
+END.

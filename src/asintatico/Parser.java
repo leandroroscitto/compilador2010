@@ -239,12 +239,23 @@ public class Parser {
     }
 
     // <siguiente identificador> : 
-    //      TCOMA TIDENTIFICADOR |
+    //      TCOMA TIDENTIFICADOR <siguiente identificador> |
     //      lambda
     public boolean siguiente_identificador() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TCOMA) {
+            leerToken();
+            if (TActual.tipo == Token.TIDENTIFICADOR) {
+                leerToken();
+                siguiente_identificador();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un identificador en la declaracion de variable.", TActual.nlinea, TActual);
+            }
+        } else {
+            return true;
+        }
     }
+
 
     // <variable> :
     //      TIDENTIFICADOR <variable'>
@@ -838,26 +849,31 @@ public class Parser {
     public boolean encabezado_de_funcion() throws ExcepALexico, IOException, ExcepASintatico {
         if(TActual.tipo == Token.TPALRES_FUNCTION){
         	leerToken();
-        	encabezado_de_funcionP();
-        	if(TActual.tipo == Token.TDOSPUNTOS){
+        	if(TActual.tipo == Token.TIDENTIFICADOR){
         		leerToken();
-        		if(TActual.tipo == Token.TIDENTIFICADOR){
-        			leerToken();
-        			if(TActual.tipo == Token.TPUNTO_Y_COMA){
-        				
-        			}else{
-        				throw new ExcepASintatico("Se esperaba el simbolo ';' al final del encabezado de la funcion.", TActual.nlinea, TActual);
-        			}
-        		}else{
-        			throw new ExcepASintatico("Se esperaba un identificador de funcion en el encabezado de la funcion.", TActual.nlinea, TActual);
-        		}
+        		encabezado_de_funcionP();
+	        	if(TActual.tipo == Token.TDOSPUNTOS){
+	        		leerToken();
+	        		if(TActual.tipo == Token.TIDENTIFICADOR){
+	        			leerToken();
+	        			if(TActual.tipo == Token.TPUNTO_Y_COMA){
+	        				leerToken();
+	        				return true;
+	        			}else{
+	        				throw new ExcepASintatico("Se esperaba el simbolo ';' al final del encabezado de la funcion.", TActual.nlinea, TActual);
+	        			}
+	        		}else{
+	        			throw new ExcepASintatico("Se esperaba un identificador de funcion en el encabezado de la funcion.", TActual.nlinea, TActual);
+	        		}
+	        	}else{
+	        		throw new ExcepASintatico("Se esperaba el simbolo ':' en el encabezado de la funcion.", TActual.nlinea, TActual);
+	        	}
         	}else{
-        		throw new ExcepASintatico("Se esperaba el simbolo ':' en el encabezado de la funcion.", TActual.nlinea, TActual);
+        		throw new ExcepASintatico("Se esperaba un identificador en el encabezado de la funcion.", TActual.nlinea, TActual);
         	}
         }else{
         	throw new ExcepASintatico("Se esperaba la palabra reservada 'funcion' al comienzo del encabezado de la funcion.", TActual.nlinea, TActual);
         }
-        return true;
     }
 
     // <encabezado de funcion'> :
@@ -892,6 +908,7 @@ public class Parser {
                     leerToken();
                     bloque();
                     if (TActual.tipo == Token.TPUNTO) {
+                    	leerToken();
                         return true;
                     } else {
                         throw new ExcepASintatico("Se esperaba el simbolo '.' al final del programa.", TActual.nlinea, TActual);
