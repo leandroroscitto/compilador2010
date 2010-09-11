@@ -223,8 +223,19 @@ public class Parser {
     // <declaracion de variable> :
     //  TIDENTIFICADOR <siguiente identificador> TDOSPUNTOS <tipo>
     public boolean declaracion_de_variable() throws ExcepASintatico, ExcepALexico, IOException {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            leerToken();
+            siguiente_identificador();
+            if (TActual.tipo == Token.TDOSPUNTOS) {
+                leerToken();
+                tipo();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un ':' en la declaracion de variable.", TActual.nlinea, TActual);
+            }
+        } else {
+            throw new ExcepASintatico("Se esperaba un identificador al inicion de la declaracion de variable.", TActual.nlinea, TActual);
+        }
     }
 
     // <siguiente identificador> : 
@@ -463,16 +474,32 @@ public class Parser {
     // <sentencia compuesta> :
     //      TPALRES_BEGIN <sentencia><sentencia compuesta'> TPALRES_END
     public boolean sentencia_compuesta() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TPALRES_BEGIN) {
+            leerToken();
+            sentencia();
+            sentencia_compuestaP();
+            if (TActual.tipo == Token.TPALRES_END) {
+                leerToken();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba la palabra reservada 'end' al final de una sentencia compuesta.", TActual.nlinea, TActual);
+            }
+        } else {
+            throw new ExcepASintatico("Se esperaba la palabra reservada 'begin' al inicio de una sentencia compuesta.", TActual.nlinea, TActual);
+        }
     }
 
     // <sentencia compuesta'> :
     //      TPUNO_Y_COMA <sentencia> |
     //      lambda
     public boolean sentencia_compuestaP() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+            leerToken();
+            sentencia();
+            return true;
+        } else {
+            return true;
+        }
     }
 
     // <sentencia if> :
@@ -636,7 +663,7 @@ public class Parser {
                 throw new ExcepASintatico("Se esperaba un ';' en la definicion de tipos.", TActual.nlinea, TActual);
             }
         } else {
-            throw new ExcepASintatico("Se esperaba un identificador en la definicion de tipos.", TActual.nlinea, TActual);
+            return true;
         }
     }
 
@@ -644,16 +671,37 @@ public class Parser {
     //      TPALRES_VAR <declaracion de variable> TPUNTO_Y_COMA <siguiente declaracion de variable> |
     //      lambda
     public boolean parte_de_declaracion_de_variables() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TPALRES_VAR) {
+            leerToken();
+            declaracion_de_variable();
+            if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+                leerToken();
+                siguiente_declaracion_de_variable();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un ';' al final de la declaracion de variables.", TActual.nlinea, TActual);
+            }
+        } else {
+            return true;
+        }
     }
 
     // <siguiente declaracion de variable> :
     //      <declaracion de variable> TPUNTO_Y_COMA <siguiente declaracion de variable> |
     //      lambda
     public boolean siguiente_declaracion_de_variable() throws ExcepASintatico, ExcepALexico, IOException {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            declaracion_de_variable();
+            if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+                leerToken();
+                siguiente_declaracion_de_variable();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un ';' al final de la declaracion de variable.", TActual.nlinea, TActual);
+            }
+        } else {
+            return true;
+        }
     }
 
     // <parte de declaracion de funciones y procedimientos> :
@@ -681,7 +729,7 @@ public class Parser {
 
     // <parte de sentencias> : <sentencia compuesta>
     public boolean parte_de_sentencias() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
+        sentencia_compuesta();
         return true;
     }
 
