@@ -1,6 +1,6 @@
 program Completo;
 const c1=20;
-		c2='a';
+      c2='a';
 type t1=integer;
 	  t2=23..30;
 	  t3=array[3..4]of char;
