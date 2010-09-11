@@ -41,12 +41,35 @@ public class Parser {
 	//			***********CONSTANTES***********
 	/*--------------------------------------------------------------*/
     public boolean constante() throws ExcepALexico, IOException, ExcepASintatico {
-    	//TODO
-    	return true;
+    	if((TActual.tipo == Token.TNUMERO)
+    			||(TActual.tipo == Token.TCARACTER)
+    			||(TActual.tipo == Token.TIDENTIFICADOR)){
+    		leerToken();
+    		return true;
+    	}
+    	//si comienza con un signo
+    	signo();
+    	if((TActual.tipo == Token.TNUMERO)
+    			||(TActual.tipo == Token.TIDENTIFICADOR)){
+    		leerToken();
+    		return true;
+    	}else{
+    		throw new ExcepASintatico("Se esperaba un identificador o un numero", TActual.nlinea,TActual);
+    	}  	
     }
 
     public boolean definicion_de_constante() throws ExcepALexico, IOException, ExcepASintatico {
-    	//TODO
+    	if(TActual.tipo == Token.TIDENTIFICADOR){
+    		leerToken();
+    		if(TActual.tipo == Token.TSIMBOLO_IGUAL){
+    			leerToken();
+    			constante();
+    		}else{
+    			throw new ExcepASintatico("Se esperaba un simbolo \"=\" ", TActual.nlinea,TActual);
+    		}
+    	}else{
+    		throw new ExcepASintatico("Se esperaba un identificador", TActual.nlinea,TActual);
+    	}
     	return true;
     }
   /*--------------------------------------------------------------*/
@@ -272,7 +295,11 @@ public class Parser {
     }
     
     public boolean bloque() throws ExcepALexico, IOException, ExcepASintatico {
-    	//TODO
+    	parte_de_definicion_de_constantes();
+    	parte_de_definicion_de_tipos();
+    	parte_de_declaracion_de_variables();
+    	parte_de_declaracion_de_funciones_y_procedimientos();
+    	parte_de_sentencias();
     	return true;
     }
 
@@ -357,7 +384,7 @@ public class Parser {
     }
 
     /*--------------------------------------------------------------*/
-    // 		***********DECLARACION DE PROCEDIMIENTOS***********
+    // 		***********DECLARACION DE FUNCIONES***********
 	/*--------------------------------------------------------------*/
 
     public boolean declaracion_de_funcion()throws ExcepALexico, IOException, ExcepASintatico{
@@ -380,8 +407,27 @@ public class Parser {
 	/*--------------------------------------------------------------*/
     
     public boolean programa() throws ExcepALexico, IOException, ExcepASintatico {
-    	//TODO
-    	return true;
+    	if(TActual.tipo == Token.TPALRES_PROGRAM){
+    		leerToken();
+    		if(TActual.tipo == Token.TIDENTIFICADOR){
+    			leerToken();
+    			if(TActual.tipo == Token.TPUNTO_Y_COMA){
+    				leerToken();
+    				bloque();
+    				if(TActual.tipo == Token.TPUNTO){
+    					return true;
+    				}else{
+    					throw new ExcepASintatico("Se esperaba el simbolo \".\" ", TActual.nlinea,TActual);
+    				}
+    			}else{
+    				throw new ExcepASintatico("Se esperaba el simbolo \";\" ", TActual.nlinea,TActual);
+    			}
+    		}else{
+    			throw new ExcepASintatico("Se esperaba un identificador  ", TActual.nlinea,TActual);
+    		}
+    	}else{
+    		throw new ExcepASintatico("Se esperaba la palabra reservada \"PROGRAM\" ", TActual.nlinea,TActual);
+    	}
     }
 
     /*--------------------------------------------------------------*/
