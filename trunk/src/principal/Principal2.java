@@ -37,7 +37,7 @@ public class Principal2 {
                 ASintactico.programa();
                 ASintactico.eof();
 
-                // Si llega aqui sin producer una excepci�n, el codigo
+                // Si llega aqui sin producer una excepcion, el codigo
                 // de entrada es sintacticamente correcto
 
                 Salida.println();
@@ -46,7 +46,7 @@ public class Principal2 {
                 System.out.println("IOException capturada, no se pudo leer del archivo.");
             }
         } else {
-            // Falt� el parametro de entrada
+            // Falto el parametro de entrada
             System.out.println("De como parametro al menos un nombre para el archivo de entrada.");
         }
     }
