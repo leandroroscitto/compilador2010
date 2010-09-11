@@ -423,53 +423,104 @@ public class Parser {
     //      <sentencia simple> |
     //      <sentencia estructurada>
     public boolean sentencia() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    	if(TActual.tipo == Token.TIDENTIFICADOR){
+        	sentencia_simple();
+        	return true;
+	    }
+        if((TActual.tipo == Token.TPALRES_BEGIN)||(TActual.tipo == Token.TPALRES_IF)||(TActual.tipo == Token.TPALRES_WHILE)){
+        	sentencia_estructurada();
+        	return true;
+        }
+		throw new ExcepASintatico("Se esperaba 'BEGIN', 'if' , o 'while' al comienzo de una sentencia estructurada.", TActual.nlinea, TActual);
+
     }
 
     // <sentencia simple> :
-    //      <sentencia de asignacion> |
-    //      <sentencia de procedimiento> |
-    //      lambda
+    //      TIDENTIFICADOR <sentencia simple'> |
+    //		lambda
+
     public boolean sentencia_simple() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    	if(TActual.tipo == Token.TIDENTIFICADOR){
+        	sentencia_simpleP();
+        	return true;
+	    }else{
+	    	return true;
+	    }
+    }
+    
+    // <sentencia simple'> : <sentencia de asignacion'> |
+    // <sentencia de procedimiento'>  
+    public boolean sentencia_simpleP() throws ExcepALexico, IOException, ExcepASintatico {
+    	if((TActual.tipo == Token.TCORA)||(TActual.tipo == Token.TASIGN)){
+        	sentencia_de_asignacion();
+        	return true;
+	    }
+    	if(TActual.tipo == Token.TPARENTA){
+    		sentencia_de_procedimientoP();
+    		return true;
+    	}
+    	throw new ExcepASintatico("Se esperaba una sentencia de asignacion o una sentencia de procedimiento validos.", TActual.nlinea, TActual);
     }
 
     // <sentencia de asignacion> :
     //      TIDENTIFICADOR <sentencia de asignacion'>
-    public boolean sentencia_se_asignacion() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    public boolean sentencia_de_asignacion() throws ExcepALexico, IOException, ExcepASintatico {
+    	if(TActual.tipo == Token.TIDENTIFICADOR){
+        	leerToken();
+        	sentencia_de_asignacionP();
+        	return true;
+	    }else{
+	       	throw new ExcepASintatico("Se esperaba un identificador en la sentencia de asignacion.", TActual.nlinea, TActual);
+	    }
     }
 
     // <sentencia de asignacion'> :
     //      <variable'> TASIGN <expresion> |
     //      TASIGN <expresion>
-    public boolean sentencia_se_asignacionP() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    public boolean sentencia_de_asignacionP() throws ExcepALexico, IOException, ExcepASintatico {
+    	if(TActual.tipo == Token.TCORA){
+        	variableP();
+    	}
+        if(TActual.tipo == Token.TASIGN){
+        	leerToken();
+        	expresion();
+        	return true;
+	    }else{
+	       	throw new ExcepASintatico("Se esperaba el simbolo ':=' en la sentencia de asignacion.", TActual.nlinea, TActual);
+	    }
     }
 
     // <sentencia de procedimiento> :
     //      TIDENTIFICADOR <sentencia de procedimiento'>
     public boolean sentencia_de_procedimiento() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if(TActual.tipo == Token.TIDENTIFICADOR){
+        	leerToken();
+        	sentencia_de_procedimientoP();
+        	return true;
+        }else{
+        	throw new ExcepASintatico("Se esperaba un identificador al comienzo de una sentencia de procedimiento.", TActual.nlinea, TActual);
+        }
     }
 
     // <sentencia de procedimiento'> :
     //      TPARENTA <parametro actual><siguiente parametro actual> |
     //      lambda
     public boolean sentencia_de_procedimientoP() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if(TActual.tipo == Token.TPARENTA){
+        	leerToken();
+        	parametro_actual();
+        	siguiente_parametro_actual();
+        	return true;
+        }else{
+        	throw new ExcepASintatico("Se esperaba el simbolo '(', al comienzo de una sentencia de procedimiento.", TActual.nlinea, TActual);
+        }
+        
     }
 
     // <parametro actual> :
     //      <expresion>
     public boolean parametro_actual() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
+        expresion();
         return true;
     }
 
@@ -478,8 +529,19 @@ public class Parser {
     //      <sentencia if> |
     //      <sentencia while>
     public boolean sentencia_estructurada() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if(TActual.tipo == Token.TPALRES_BEGIN){
+        	sentencia_compuesta();
+        	return true;
+        }
+        if(TActual.tipo == Token.TPALRES_IF){
+        	sentencia_if();
+        	return true;
+        }
+		if(TActual.tipo == Token.TPALRES_WHILE){
+			sentencia_while();
+			return true;
+		}
+		throw new ExcepASintatico("Se esperaba 'BEGIN', 'if' , o 'while' al comienzo de una sentencia estructurada.", TActual.nlinea, TActual);
     }
 
     // <sentencia compuesta> :
@@ -516,23 +578,51 @@ public class Parser {
     // <sentencia if> :
     //      TPALRES_IF <expresion> TPALRES_THEN <sentencia> <sentencia if'>
     public boolean sentencia_if() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    	if(TActual.tipo == Token.TPALRES_IF){
+        	leerToken();
+        	expresion();
+        	if(TActual.tipo == Token.TPALRES_THEN){
+            	leerToken();
+            	sentencia();
+            	sentencia_if();
+            	return true;
+            }else{
+            	throw new ExcepASintatico("Se esperaba la palabra reservada 'then' al final de la sentencia.", TActual.nlinea, TActual);
+            }
+        }else{
+        	throw new ExcepASintatico("Se esperaba la palabra reservada 'if' al comienzo de la sentencia.", TActual.nlinea, TActual);
+        }
     }
 
     // <sentencia if'> :
     //      TPALRES_ELSE <sentencia> |
     //      lambda
     public boolean sentencia_ifP() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    	if(TActual.tipo == Token.TPALRES_ELSE){
+        	leerToken();
+        	sentencia();
+        	return true;
+        }else{
+        	return true;
+        }
     }
 
     // <sentencia while> :
     //      TPALRES_WHILE <expresion> TPALRES_DO <sentencia>
     public boolean sentencia_while() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if(TActual.tipo == Token.TPALRES_WHILE){
+        	leerToken();
+        	expresion();
+        	if(TActual.tipo == Token.TPALRES_DO){
+            	leerToken();
+            	sentencia();
+            	return true;
+            }else{
+            	throw new ExcepASintatico("Se esperaba la palabra reservada 'do' al final de la sentencia.", TActual.nlinea, TActual);
+            }
+        }else{
+        	throw new ExcepASintatico("Se esperaba la palabra reservada 'while' al comienzo de la sentencia.", TActual.nlinea, TActual);
+        }
     }
 
     /*--------------------------------------------------------------*/
@@ -650,7 +740,7 @@ public class Parser {
                      throw new ExcepASintatico("Se esperaba un identificador de tipo en la seccion de parametros formales.", TActual.nlinea, TActual);
                  }
              } else {
-                 throw new ExcepASintatico("Se esperaba un '=' en la seccion de parametros formales.", TActual.nlinea, TActual);
+                 throw new ExcepASintatico("Se esperaba un ':' en la seccion de parametros formales.", TActual.nlinea, TActual);
              }
          } else {
              throw new ExcepASintatico("Se esperaba un identificador de variable en la seccion de parametros formales.", TActual.nlinea, TActual);
@@ -863,7 +953,7 @@ public class Parser {
 	        				throw new ExcepASintatico("Se esperaba el simbolo ';' al final del encabezado de la funcion.", TActual.nlinea, TActual);
 	        			}
 	        		}else{
-	        			throw new ExcepASintatico("Se esperaba un identificador de funcion en el encabezado de la funcion.", TActual.nlinea, TActual);
+	        			throw new ExcepASintatico("Se esperaba un identificador de tipo en el encabezado de la funcion.", TActual.nlinea, TActual);
 	        		}
 	        	}else{
 	        		throw new ExcepASintatico("Se esperaba el simbolo ':' en el encabezado de la funcion.", TActual.nlinea, TActual);
