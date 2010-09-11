@@ -707,7 +707,7 @@ public class Parser {
     // <parte de declaracion de funciones y procedimientos> :
     //      <siguiente declaracion de procedimiento o funcion>
     public boolean parte_de_declaracion_de_funciones_y_procedimientos() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
+    	siguiente_declaracion_de_procedimiento_o_funcion();
         return true;
     }
 
@@ -715,16 +715,34 @@ public class Parser {
     //      <declaracion de procedimiento o funcion> TPUNTO_Y_COMA <siguiente declaracion de procedimiento o funcion> |
     //      lambda
     public boolean siguiente_declaracion_de_procedimiento_o_funcion() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    	
+    	if((TActual.tipo == Token.TPALRES_FUNCTION)||(TActual.tipo == Token.TPALRES_PROCEDURE)){
+    		declaracion_de_procedimiento_o_funcion();
+    		if(TActual.tipo == Token.TPUNTO_Y_COMA){
+    			leerToken();
+    			siguiente_declaracion_de_procedimiento_o_funcion();
+    			return true;
+    		}else{
+    			throw new ExcepASintatico("Se esperaba un ';' al finalizar la declaracion de un procedimiento o funcion ", TActual.nlinea, TActual);
+    		}    		
+    	}else{
+    		return true;
+    	}
     }
 
     // <declaracion de procedimiento o funcion> :
     //      <declaracion de procedimiento> |
     //      <declaracion de funcion>
     public boolean declaracion_de_procedimiento_o_funcion() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    	   if (TActual.tipo == Token.TPALRES_PROCEDURE) {
+               declaracion_de_procedimiento();
+               return true;
+           }
+           if (TActual.tipo == Token.TPALRES_FUNCTION) {
+               declaracion_de_funcion();
+               return true;
+           }
+           throw new ExcepASintatico("Se esperaba una declaracion de procedimiento o funcion.", TActual.nlinea, TActual);
     }
 
     // <parte de sentencias> : <sentencia compuesta>
