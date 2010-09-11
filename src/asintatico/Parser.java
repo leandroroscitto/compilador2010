@@ -256,27 +256,56 @@ public class Parser {
         }
     }
 
-
     // <variable> :
     //      TIDENTIFICADOR <variable'>
     public boolean variable() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            leerToken();
+            variableP();
+            return true;
+        } else {
+            throw new ExcepASintatico("Se esperaba un identificador de variable.", TActual.nlinea, TActual);
+        }
     }
 
     // <variable'> :
     //      TCORA <expresion> TCORC |
     //      lambda
     public boolean variableP() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TCORA) {
+            leerToken();
+            expresion();
+            if (TActual.tipo == Token.TCORC) {
+                leerToken();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un ']' en la variable indexada.", TActual.nlinea, TActual);
+            }
+        } else {
+            return true;
+        }
     }
 
     // #<variable indexada> :
     //      TIDENTIFICADOR TCORA <expresion> TCORC
     public boolean variable_indexada() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            leerToken();
+            if (TActual.tipo == Token.TCORA) {
+                leerToken();
+                expresion();
+                if (TActual.tipo == Token.TCORC) {
+                    leerToken();
+                    return true;
+                } else {
+                    throw new ExcepASintatico("Se esperaba un ']' en la variable indexada.", TActual.nlinea, TActual);
+                }
+            } else {
+                throw new ExcepASintatico("Se esperaba un '[' en la variable indexada.", TActual.nlinea, TActual);
+            }
+        } else {
+            throw new ExcepASintatico("Se esperaba un identificador al inicio de la variable indexada.", TActual.nlinea, TActual);
+        }
     }
 
     /*--------------------------------------------------------------*/
@@ -287,8 +316,14 @@ public class Parser {
     //      TIDENTIFICADOR | 
     //      TCARACTER
     public boolean constante_sin_signo() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TNUMERO
+                || TActual.tipo == Token.TIDENTIFICADOR
+                || TActual.tipo == Token.TCARACTER) {
+            leerToken();
+            return true;
+        } else {
+            throw new ExcepASintatico("Se esperaba un numero, identificador o caracter en la constante sin signo.", TActual.nlinea, TActual);
+        }
     }
 
     // <factor> :
@@ -298,8 +333,33 @@ public class Parser {
     //      TPARENTA <expresion> TPARENTC |
     //      TOPER_NOT <factor>
     public boolean factor() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            leerToken();
+            factorP();
+            return true;
+        }
+        if (TActual.tipo == Token.TNUMERO
+                || TActual.tipo == Token.TCARACTER) {
+            leerToken();
+            return true;
+        }
+        if (TActual.tipo == Token.TPARENTA) {
+            leerToken();
+            expresion();
+            if (TActual.tipo == Token.TPARENTC) {
+                leerToken();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un ')' en el factor.", TActual.nlinea, TActual);
+            }
+        }
+        if (TActual.tipo == Token.TOPER_NOT) {
+            leerToken();
+            factor();
+            return true;
+        }
+
+        throw new ExcepASintatico("Se esperaba un factor valido.", TActual.nlinea, TActual);
     }
 
     // <factor'> :
@@ -307,14 +367,24 @@ public class Parser {
     //      <designador de funcion'> |
     //      lambda
     public boolean factorP() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
+        if (TActual.tipo == Token.TCORA) {
+            variableP();
+            return true;
+        }
+        if (TActual.tipo == Token.TPARENTA) {
+            designador_de_funcionP();
+            return true;
+        }
+
+        // En el caso de lambda
         return true;
     }
 
     // <termino> :
     //      <factor><termino'>
     public boolean termino() throws IOException, ExcepALexico, ExcepASintatico {
-        //TODO
+        factor();
+        terminoP();
         return true;
     }
 
@@ -322,30 +392,63 @@ public class Parser {
     //      <operador de multiplicacion><factor><termino'> |
     //      lambda
     public boolean terminoP() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TOPERMULT
+                || TActual.tipo == Token.TOPERDIV
+                || TActual.tipo == Token.TOPER_AND) {
+            operador_de_multiplicacion();
+            factor();
+            terminoP();
+            return true;
+        } else {
+            return true;
+        }
     }
 
     // <expresion simple> :
     //      <termino><expresion simple'> |
     //      <signo><termino><expresion simple'>
     public boolean expresion_simple() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TIDENTIFICADOR
+                || TActual.tipo == Token.TNUMERO
+                || TActual.tipo == Token.TCARACTER
+                || TActual.tipo == Token.TPARENTA
+                || TActual.tipo == Token.TOPER_NOT) {
+            termino();
+            expresion_simpleP();
+            return true;
+        }
+        if (TActual.tipo == Token.TOPERMAS
+                || TActual.tipo == Token.TOPERMENOS) {
+            signo();
+            termino();
+            expresion_simpleP();
+            return true;
+        }
+
+        throw new ExcepASintatico("Se esperaba una expresion simple valida.", TActual.nlinea, TActual);
     }
 
     // <expresion simple'> :
     //      <operador de suma><termino><expresion simple'> |
     //      lambda
     public boolean expresion_simpleP() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TOPERMAS
+                || TActual.tipo == Token.TOPERMENOS
+                || TActual.tipo == Token.TOPER_OR) {
+            operador_de_suma();
+            termino();
+            expresion_simpleP();
+            return true;
+        } else {
+            return true;
+        }
     }
 
     // <expresion> :
     //      <expresion simple><expresion'>
     public boolean expresion() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
+        expresion_simple();
+        expresionP();
         return true;
     }
 
@@ -353,8 +456,18 @@ public class Parser {
     //      <operador de relecion><expresion simple> |
     //      lambda
     public boolean expresionP() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TSIMBOLO_IGUAL
+                || TActual.tipo == Token.TSIMBOLO_DISTINTO
+                || TActual.tipo == Token.TSIMBOLO_MAYOR
+                || TActual.tipo == Token.TSIMBOLO_MAYORIGUAL
+                || TActual.tipo == Token.TSIMBOLO_MENOR
+                || TActual.tipo == Token.TSIMBOLO_MENORIGUAL) {
+            operador_de_relacion();
+            expresion_simple();
+            return true;
+        } else {
+            return true;
+        }
     }
 
     /*--------------------------------------------------------------*/
@@ -365,8 +478,14 @@ public class Parser {
     //      TOPER_DIV |
     //      TOPER_AND
     public boolean operador_de_multiplicacion() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TOPERMULT
+                || TActual.tipo == Token.TOPERDIV
+                || TActual.tipo == Token.TOPER_AND) {
+            leerToken();
+            return true;
+        } else {
+            throw new ExcepASintatico("Se esperaba una operador de multiplicacion.", TActual.nlinea, TActual);
+        }
     }
 
     // <operador de suma> :
@@ -374,8 +493,14 @@ public class Parser {
     //      TOPERMENOS |
     //      TOPER_OR
     public boolean operador_de_suma() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TOPERMAS
+                || TActual.tipo == Token.TOPERMENOS
+                || TActual.tipo == Token.TOPER_OR) {
+            leerToken();
+            return true;
+        } else {
+            throw new ExcepASintatico("Se esperaba una operador de suma.", TActual.nlinea, TActual);
+        }
     }
 
     // <operador de relacion> :
@@ -386,8 +511,17 @@ public class Parser {
     //      TSIMBOLO_MAYOR |
     //      TSIMBOLO_MAYORIGUAL
     public boolean operador_de_relacion() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TSIMBOLO_IGUAL
+                || TActual.tipo == Token.TSIMBOLO_DISTINTO
+                || TActual.tipo == Token.TSIMBOLO_MAYOR
+                || TActual.tipo == Token.TSIMBOLO_MAYORIGUAL
+                || TActual.tipo == Token.TSIMBOLO_MENOR
+                || TActual.tipo == Token.TSIMBOLO_MENORIGUAL) {
+            leerToken();
+            return true;
+        } else {
+            throw new ExcepASintatico("Se esperaba una operador de relacion.", TActual.nlinea, TActual);
+        }
     }
 
     /*--------------------------------------------------------------*/
@@ -396,24 +530,45 @@ public class Parser {
     // <designador de funcion> :
     //      TIDENTIFICADOR <designador de funcion'>
     public boolean designador_de_funcion() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            leerToken();
+            designador_de_funcionP();
+            return true;
+        } else {
+            throw new ExcepASintatico("Se esperaba un identificador para el designador de funcion.", TActual.nlinea, TActual);
+        }
     }
 
     // <designador de funcion'> :
     //      TPARENTA <parametro actual> <siguiente parametro actual> TPARENTC |
     //      lambda
     public boolean designador_de_funcionP() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TPARENTA) {
+            leerToken();
+            parametro_actual();
+            siguiente_parametro_actual();
+            if (TActual.tipo == Token.TPARENTC) {
+                leerToken();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un ')' en el designador de funcion.", TActual.nlinea, TActual);
+            }
+        } else {
+            return true;
+        }
     }
 
     // <siguiente parametro actual> :
     //      TCOMA <parametro actual> | 
     //      lambda
     public boolean siguiente_parametro_actual() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TCOMA) {
+            leerToken();
+            parametro_actual();
+            return true;
+        } else {
+            return true;
+        }
     }
 
     /*--------------------------------------------------------------*/
@@ -423,82 +578,85 @@ public class Parser {
     //      <sentencia simple> |
     //      <sentencia estructurada>
     public boolean sentencia() throws ExcepALexico, IOException, ExcepASintatico {
-    	if(TActual.tipo == Token.TIDENTIFICADOR){
-        	sentencia_simple();
-        	return true;
-	    }
-        if((TActual.tipo == Token.TPALRES_BEGIN)||(TActual.tipo == Token.TPALRES_IF)||(TActual.tipo == Token.TPALRES_WHILE)){
-        	sentencia_estructurada();
-        	return true;
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            sentencia_simple();
+            return true;
         }
-		throw new ExcepASintatico("Se esperaba una sentencia simple o una sentencia estructurada validas.", TActual.nlinea, TActual);
-
+        if ((TActual.tipo == Token.TPALRES_BEGIN)
+                || (TActual.tipo == Token.TPALRES_IF)
+                || (TActual.tipo == Token.TPALRES_WHILE)) {
+            sentencia_estructurada();
+            return true;
+        }
+        throw new ExcepASintatico("Se esperaba una sentencia simple o una sentencia estructurada validas.", TActual.nlinea, TActual);
     }
 
     // <sentencia simple> :
     //      TIDENTIFICADOR <sentencia simple'> |
-    //		lambda
-
+    //      lambda
     public boolean sentencia_simple() throws ExcepALexico, IOException, ExcepASintatico {
-    	if(TActual.tipo == Token.TIDENTIFICADOR){
-        	sentencia_simpleP();
-        	return true;
-	    }else{
-	    	return true;
-	    }
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            leerToken();
+            sentencia_simpleP();
+            return true;
+        } else {
+            return true;
+        }
     }
-    
-    // <sentencia simple'> : <sentencia de asignacion'> |
-    // <sentencia de procedimiento'>  
+
+    // <sentencia simple'> :
+    //      <sentencia de asignacion'> |
+    //      <sentencia de procedimiento'>
     public boolean sentencia_simpleP() throws ExcepALexico, IOException, ExcepASintatico {
-    	if((TActual.tipo == Token.TCORA)||(TActual.tipo == Token.TASIGN)){
-        	sentencia_de_asignacion();
-        	return true;
-	    }
-    	if(TActual.tipo == Token.TPARENTA){
-    		sentencia_de_procedimientoP();
-    		return true;
-    	}
-    	throw new ExcepASintatico("Se esperaba una sentencia de asignacion o una sentencia de procedimiento validos.", TActual.nlinea, TActual);
+        if ((TActual.tipo == Token.TCORA)
+                || (TActual.tipo == Token.TASIGN)) {
+            sentencia_de_asignacionP();
+            return true;
+        }
+        if (TActual.tipo == Token.TPARENTA) {
+            sentencia_de_procedimientoP();
+            return true;
+        }
+        throw new ExcepASintatico("Se esperaba una sentencia de asignacion o una sentencia de procedimiento validos.", TActual.nlinea, TActual);
     }
 
     // <sentencia de asignacion> :
     //      TIDENTIFICADOR <sentencia de asignacion'>
     public boolean sentencia_de_asignacion() throws ExcepALexico, IOException, ExcepASintatico {
-    	if(TActual.tipo == Token.TIDENTIFICADOR){
-        	leerToken();
-        	sentencia_de_asignacionP();
-        	return true;
-	    }else{
-	       	throw new ExcepASintatico("Se esperaba un identificador en la sentencia de asignacion.", TActual.nlinea, TActual);
-	    }
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            leerToken();
+            sentencia_de_asignacionP();
+            return true;
+        } else {
+            throw new ExcepASintatico("Se esperaba un identificador en la sentencia de asignacion.", TActual.nlinea, TActual);
+        }
     }
 
     // <sentencia de asignacion'> :
     //      <variable'> TASIGN <expresion> |
     //      TASIGN <expresion>
     public boolean sentencia_de_asignacionP() throws ExcepALexico, IOException, ExcepASintatico {
-    	if(TActual.tipo == Token.TCORA){
-        	variableP();
-    	}
-        if(TActual.tipo == Token.TASIGN){
-        	leerToken();
-        	expresion();
-        	return true;
-	    }else{
-	       	throw new ExcepASintatico("Se esperaba el simbolo ':=' en la sentencia de asignacion.", TActual.nlinea, TActual);
-	    }
+        if (TActual.tipo == Token.TCORA) {
+            variableP();
+        }
+        if (TActual.tipo == Token.TASIGN) {
+            leerToken();
+            expresion();
+            return true;
+        } else {
+            throw new ExcepASintatico("Se esperaba el simbolo ':=' en la sentencia de asignacion.", TActual.nlinea, TActual);
+        }
     }
 
     // <sentencia de procedimiento> :
     //      TIDENTIFICADOR <sentencia de procedimiento'>
     public boolean sentencia_de_procedimiento() throws ExcepALexico, IOException, ExcepASintatico {
-        if(TActual.tipo == Token.TIDENTIFICADOR){
-        	leerToken();
-        	sentencia_de_procedimientoP();
-        	return true;
-        }else{
-        	throw new ExcepASintatico("Se esperaba un identificador al comienzo de una sentencia de procedimiento.", TActual.nlinea, TActual);
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            leerToken();
+            sentencia_de_procedimientoP();
+            return true;
+        } else {
+            throw new ExcepASintatico("Se esperaba un identificador al comienzo de una sentencia de procedimiento.", TActual.nlinea, TActual);
         }
     }
 
@@ -506,15 +664,15 @@ public class Parser {
     //      TPARENTA <parametro actual><siguiente parametro actual> |
     //      lambda
     public boolean sentencia_de_procedimientoP() throws ExcepALexico, IOException, ExcepASintatico {
-        if(TActual.tipo == Token.TPARENTA){
-        	leerToken();
-        	parametro_actual();
-        	siguiente_parametro_actual();
-        	return true;
-        }else{
-        	throw new ExcepASintatico("Se esperaba el simbolo '(', al comienzo de una sentencia de procedimiento.", TActual.nlinea, TActual);
+        if (TActual.tipo == Token.TPARENTA) {
+            leerToken();
+            parametro_actual();
+            siguiente_parametro_actual();
+            return true;
+        } else {
+            throw new ExcepASintatico("Se esperaba el simbolo '(', al comienzo de una sentencia de procedimiento.", TActual.nlinea, TActual);
         }
-        
+
     }
 
     // <parametro actual> :
@@ -529,19 +687,19 @@ public class Parser {
     //      <sentencia if> |
     //      <sentencia while>
     public boolean sentencia_estructurada() throws ExcepALexico, IOException, ExcepASintatico {
-        if(TActual.tipo == Token.TPALRES_BEGIN){
-        	sentencia_compuesta();
-        	return true;
+        if (TActual.tipo == Token.TPALRES_BEGIN) {
+            sentencia_compuesta();
+            return true;
         }
-        if(TActual.tipo == Token.TPALRES_IF){
-        	sentencia_if();
-        	return true;
+        if (TActual.tipo == Token.TPALRES_IF) {
+            sentencia_if();
+            return true;
         }
-		if(TActual.tipo == Token.TPALRES_WHILE){
-			sentencia_while();
-			return true;
-		}
-		throw new ExcepASintatico("Se esperaba 'BEGIN', 'if' , o 'while' al comienzo de una sentencia estructurada.", TActual.nlinea, TActual);
+        if (TActual.tipo == Token.TPALRES_WHILE) {
+            sentencia_while();
+            return true;
+        }
+        throw new ExcepASintatico("Se esperaba 'BEGIN', 'if' , o 'while' al comienzo de una sentencia estructurada.", TActual.nlinea, TActual);
     }
 
     // <sentencia compuesta> :
@@ -578,19 +736,19 @@ public class Parser {
     // <sentencia if> :
     //      TPALRES_IF <expresion> TPALRES_THEN <sentencia> <sentencia if'>
     public boolean sentencia_if() throws ExcepALexico, IOException, ExcepASintatico {
-    	if(TActual.tipo == Token.TPALRES_IF){
-        	leerToken();
-        	expresion();
-        	if(TActual.tipo == Token.TPALRES_THEN){
-            	leerToken();
-            	sentencia();
-            	sentencia_if();
-            	return true;
-            }else{
-            	throw new ExcepASintatico("Se esperaba la palabra reservada 'then' al final de la sentencia.", TActual.nlinea, TActual);
+        if (TActual.tipo == Token.TPALRES_IF) {
+            leerToken();
+            expresion();
+            if (TActual.tipo == Token.TPALRES_THEN) {
+                leerToken();
+                sentencia();
+                sentencia_if();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba la palabra reservada 'then' al final de la sentencia.", TActual.nlinea, TActual);
             }
-        }else{
-        	throw new ExcepASintatico("Se esperaba la palabra reservada 'if' al comienzo de la sentencia.", TActual.nlinea, TActual);
+        } else {
+            throw new ExcepASintatico("Se esperaba la palabra reservada 'if' al comienzo de la sentencia.", TActual.nlinea, TActual);
         }
     }
 
@@ -598,30 +756,30 @@ public class Parser {
     //      TPALRES_ELSE <sentencia> |
     //      lambda
     public boolean sentencia_ifP() throws ExcepALexico, IOException, ExcepASintatico {
-    	if(TActual.tipo == Token.TPALRES_ELSE){
-        	leerToken();
-        	sentencia();
-        	return true;
-        }else{
-        	return true;
+        if (TActual.tipo == Token.TPALRES_ELSE) {
+            leerToken();
+            sentencia();
+            return true;
+        } else {
+            return true;
         }
     }
 
     // <sentencia while> :
     //      TPALRES_WHILE <expresion> TPALRES_DO <sentencia>
     public boolean sentencia_while() throws ExcepALexico, IOException, ExcepASintatico {
-        if(TActual.tipo == Token.TPALRES_WHILE){
-        	leerToken();
-        	expresion();
-        	if(TActual.tipo == Token.TPALRES_DO){
-            	leerToken();
-            	sentencia();
-            	return true;
-            }else{
-            	throw new ExcepASintatico("Se esperaba la palabra reservada 'do' al final de la sentencia.", TActual.nlinea, TActual);
+        if (TActual.tipo == Token.TPALRES_WHILE) {
+            leerToken();
+            expresion();
+            if (TActual.tipo == Token.TPALRES_DO) {
+                leerToken();
+                sentencia();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba la palabra reservada 'do' al final de la sentencia.", TActual.nlinea, TActual);
             }
-        }else{
-        	throw new ExcepASintatico("Se esperaba la palabra reservada 'while' al comienzo de la sentencia.", TActual.nlinea, TActual);
+        } else {
+            throw new ExcepASintatico("Se esperaba la palabra reservada 'while' al comienzo de la sentencia.", TActual.nlinea, TActual);
         }
     }
 
@@ -631,11 +789,11 @@ public class Parser {
     // <declaracion de procedimiento> :
     //      <encabezado de procedimiento><bloque>
     public boolean declaracion_de_procedimiento() throws ExcepALexico, IOException, ExcepASintatico {
-    	if (TActual.tipo==Token.TPALRES_PROCEDURE){
+        if (TActual.tipo == Token.TPALRES_PROCEDURE) {
             encabezado_de_procedimiento();
             bloque();
             return true;
-        } else{
+        } else {
             throw new ExcepASintatico("Se esperaba la palabra reservada 'procedure' en la declaracion de procedimiento.", TActual.nlinea, TActual);
         }
     }
@@ -656,7 +814,7 @@ public class Parser {
     // <encabezado de procedimiento> :
     //      TPALRES_PROCEDURE TIDENTIFICADOR <encabezado de procedimiento'> TPUNTO_Y_COMA
     public boolean encabezado_de_procedimiento() throws ExcepALexico, IOException, ExcepASintatico {
-    	if (TActual.tipo == Token.TPALRES_PROCEDURE) {
+        if (TActual.tipo == Token.TPALRES_PROCEDURE) {
             leerToken();
             if (TActual.tipo == Token.TIDENTIFICADOR) {
                 leerToken();
@@ -698,13 +856,13 @@ public class Parser {
     //      TPUNTO_Y_COMA <seccion de parametros formales><siguiente seccion de parametros formales> |
     //      lambda
     public boolean siguiente_seccion_de_parametros_formales() throws ExcepALexico, IOException, ExcepASintatico {
-    	if (TActual.tipo == Token.TPUNTO_Y_COMA) {
-           leerToken();
-           seccion_de_parametros_formales();
-           siguiente_seccion_de_parametros_formales();
-             return true;
+        if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+            leerToken();
+            seccion_de_parametros_formales();
+            siguiente_seccion_de_parametros_formales();
+            return true;
         } else {
-           return true;
+            return true;
         }
     }
 
@@ -712,7 +870,7 @@ public class Parser {
     //      <grupo de parametros> |
     //      TPALRES_VAR <grupo de parametros>
     public boolean seccion_de_parametros_formales() throws ExcepALexico, IOException, ExcepASintatico {
-    	if (TActual.tipo == Token.TPALRES_VAR) {
+        if (TActual.tipo == Token.TPALRES_VAR) {
             leerToken();
             grupo_de_parametros();
             return true;
@@ -728,30 +886,30 @@ public class Parser {
     // <grupo de parametros> :
     //      TIDENTIFICADOR <siguiente grupo de parametros> TDOSPUNTOS TIDENTIFICADOR
     public boolean grupo_de_parametros() throws ExcepALexico, IOException, ExcepASintatico {
-    	 if (TActual.tipo == Token.TIDENTIFICADOR) {
-             leerToken();
-             siguiente_grupo_de_parametros();
-             if (TActual.tipo == Token.TDOSPUNTOS) {
-                 leerToken();
-                 if (TActual.tipo == Token.TIDENTIFICADOR) {
-                     leerToken();
-                     return true;
-                 } else {
-                     throw new ExcepASintatico("Se esperaba un identificador de tipo en la seccion de parametros formales.", TActual.nlinea, TActual);
-                 }
-             } else {
-                 throw new ExcepASintatico("Se esperaba un ':' en la seccion de parametros formales.", TActual.nlinea, TActual);
-             }
-         } else {
-             throw new ExcepASintatico("Se esperaba un identificador de variable en la seccion de parametros formales.", TActual.nlinea, TActual);
-         }
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            leerToken();
+            siguiente_grupo_de_parametros();
+            if (TActual.tipo == Token.TDOSPUNTOS) {
+                leerToken();
+                if (TActual.tipo == Token.TIDENTIFICADOR) {
+                    leerToken();
+                    return true;
+                } else {
+                    throw new ExcepASintatico("Se esperaba un identificador de tipo en la seccion de parametros formales.", TActual.nlinea, TActual);
+                }
+            } else {
+                throw new ExcepASintatico("Se esperaba un ':' en la seccion de parametros formales.", TActual.nlinea, TActual);
+            }
+        } else {
+            throw new ExcepASintatico("Se esperaba un identificador de variable en la seccion de parametros formales.", TActual.nlinea, TActual);
+        }
     }
 
     // <siguiente grupo de parametros> :
     //      TCOMA TIDENTIFICADOR <siguiente grupo de parametros> |
     //      lambda
     public boolean siguiente_grupo_de_parametros() throws ExcepALexico, IOException, ExcepASintatico {
-    	if (TActual.tipo == Token.TCOMA) {
+        if (TActual.tipo == Token.TCOMA) {
             leerToken();
             if (TActual.tipo == Token.TIDENTIFICADOR) {
                 leerToken();
@@ -879,7 +1037,7 @@ public class Parser {
     // <parte de declaracion de funciones y procedimientos> :
     //      <siguiente declaracion de procedimiento o funcion>
     public boolean parte_de_declaracion_de_funciones_y_procedimientos() throws ExcepALexico, IOException, ExcepASintatico {
-    	siguiente_declaracion_de_procedimiento_o_funcion();
+        siguiente_declaracion_de_procedimiento_o_funcion();
         return true;
     }
 
@@ -887,34 +1045,34 @@ public class Parser {
     //      <declaracion de procedimiento o funcion> TPUNTO_Y_COMA <siguiente declaracion de procedimiento o funcion> |
     //      lambda
     public boolean siguiente_declaracion_de_procedimiento_o_funcion() throws ExcepALexico, IOException, ExcepASintatico {
-    	
-    	if((TActual.tipo == Token.TPALRES_FUNCTION)||(TActual.tipo == Token.TPALRES_PROCEDURE)){
-    		declaracion_de_procedimiento_o_funcion();
-    		if(TActual.tipo == Token.TPUNTO_Y_COMA){
-    			leerToken();
-    			siguiente_declaracion_de_procedimiento_o_funcion();
-    			return true;
-    		}else{
-    			throw new ExcepASintatico("Se esperaba un ';' al finalizar la declaracion de un procedimiento o funcion ", TActual.nlinea, TActual);
-    		}    		
-    	}else{
-    		return true;
-    	}
+
+        if ((TActual.tipo == Token.TPALRES_FUNCTION) || (TActual.tipo == Token.TPALRES_PROCEDURE)) {
+            declaracion_de_procedimiento_o_funcion();
+            if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+                leerToken();
+                siguiente_declaracion_de_procedimiento_o_funcion();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un ';' al finalizar la declaracion de un procedimiento o funcion ", TActual.nlinea, TActual);
+            }
+        } else {
+            return true;
+        }
     }
 
     // <declaracion de procedimiento o funcion> :
     //      <declaracion de procedimiento> |
     //      <declaracion de funcion>
     public boolean declaracion_de_procedimiento_o_funcion() throws ExcepALexico, IOException, ExcepASintatico {
-    	   if (TActual.tipo == Token.TPALRES_PROCEDURE) {
-               declaracion_de_procedimiento();
-               return true;
-           }
-           if (TActual.tipo == Token.TPALRES_FUNCTION) {
-               declaracion_de_funcion();
-               return true;
-           }
-           throw new ExcepASintatico("Se esperaba una declaracion de procedimiento o funcion.", TActual.nlinea, TActual);
+        if (TActual.tipo == Token.TPALRES_PROCEDURE) {
+            declaracion_de_procedimiento();
+            return true;
+        }
+        if (TActual.tipo == Token.TPALRES_FUNCTION) {
+            declaracion_de_funcion();
+            return true;
+        }
+        throw new ExcepASintatico("Se esperaba una declaracion de procedimiento o funcion.", TActual.nlinea, TActual);
     }
 
     // <parte de sentencias> : <sentencia compuesta>
@@ -937,50 +1095,50 @@ public class Parser {
     // <encabezado de funcion> :
     //      TPALES_FUNCTION TIDENTIFICADOR <encabezado de funcion'> TDOSPUNTOS TIDENTIFICADOR TPUNTO_Y_COMA
     public boolean encabezado_de_funcion() throws ExcepALexico, IOException, ExcepASintatico {
-        if(TActual.tipo == Token.TPALRES_FUNCTION){
-        	leerToken();
-        	if(TActual.tipo == Token.TIDENTIFICADOR){
-        		leerToken();
-        		encabezado_de_funcionP();
-	        	if(TActual.tipo == Token.TDOSPUNTOS){
-	        		leerToken();
-	        		if(TActual.tipo == Token.TIDENTIFICADOR){
-	        			leerToken();
-	        			if(TActual.tipo == Token.TPUNTO_Y_COMA){
-	        				leerToken();
-	        				return true;
-	        			}else{
-	        				throw new ExcepASintatico("Se esperaba el simbolo ';' al final del encabezado de la funcion.", TActual.nlinea, TActual);
-	        			}
-	        		}else{
-	        			throw new ExcepASintatico("Se esperaba un identificador de tipo en el encabezado de la funcion.", TActual.nlinea, TActual);
-	        		}
-	        	}else{
-	        		throw new ExcepASintatico("Se esperaba el simbolo ':' en el encabezado de la funcion.", TActual.nlinea, TActual);
-	        	}
-        	}else{
-        		throw new ExcepASintatico("Se esperaba un identificador en el encabezado de la funcion.", TActual.nlinea, TActual);
-        	}
-        }else{
-        	throw new ExcepASintatico("Se esperaba la palabra reservada 'funcion' al comienzo del encabezado de la funcion.", TActual.nlinea, TActual);
+        if (TActual.tipo == Token.TPALRES_FUNCTION) {
+            leerToken();
+            if (TActual.tipo == Token.TIDENTIFICADOR) {
+                leerToken();
+                encabezado_de_funcionP();
+                if (TActual.tipo == Token.TDOSPUNTOS) {
+                    leerToken();
+                    if (TActual.tipo == Token.TIDENTIFICADOR) {
+                        leerToken();
+                        if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+                            leerToken();
+                            return true;
+                        } else {
+                            throw new ExcepASintatico("Se esperaba el simbolo ';' al final del encabezado de la funcion.", TActual.nlinea, TActual);
+                        }
+                    } else {
+                        throw new ExcepASintatico("Se esperaba un identificador de tipo en el encabezado de la funcion.", TActual.nlinea, TActual);
+                    }
+                } else {
+                    throw new ExcepASintatico("Se esperaba el simbolo ':' en el encabezado de la funcion.", TActual.nlinea, TActual);
+                }
+            } else {
+                throw new ExcepASintatico("Se esperaba un identificador en el encabezado de la funcion.", TActual.nlinea, TActual);
+            }
+        } else {
+            throw new ExcepASintatico("Se esperaba la palabra reservada 'funcion' al comienzo del encabezado de la funcion.", TActual.nlinea, TActual);
         }
     }
 
     // <encabezado de funcion'> :
     //      TPARENTA <seccion de parametros formales><siguiente seccion de parametros formales> TPARENTC
     public boolean encabezado_de_funcionP() throws ExcepALexico, IOException, ExcepASintatico {
-        if(TActual.tipo == Token.TPARENTA){
-        	leerToken();
-        	seccion_de_parametros_formales();
-        	siguiente_seccion_de_parametros_formales();
-        	if(TActual.tipo == Token.TPARENTC){
-        		leerToken();
-        		return true;
-        	}else{
-        		throw new ExcepASintatico("Se esperaba el simbolo ')' al final de los parametros formales.", TActual.nlinea, TActual);
-        	}
-        }else{
-        	throw new ExcepASintatico("Se esperaba el simbolo '(' al comienzo de los parametros formales.", TActual.nlinea, TActual);
+        if (TActual.tipo == Token.TPARENTA) {
+            leerToken();
+            seccion_de_parametros_formales();
+            siguiente_seccion_de_parametros_formales();
+            if (TActual.tipo == Token.TPARENTC) {
+                leerToken();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba el simbolo ')' al final de los parametros formales.", TActual.nlinea, TActual);
+            }
+        } else {
+            throw new ExcepASintatico("Se esperaba el simbolo '(' al comienzo de los parametros formales.", TActual.nlinea, TActual);
         }
     }
 
@@ -998,7 +1156,7 @@ public class Parser {
                     leerToken();
                     bloque();
                     if (TActual.tipo == Token.TPUNTO) {
-                    	leerToken();
+                        leerToken();
                         return true;
                     } else {
                         throw new ExcepASintatico("Se esperaba el simbolo '.' al final del programa.", TActual.nlinea, TActual);
