@@ -530,8 +530,13 @@ public class Parser {
     // <declaracion de procedimiento> :
     //      <encabezado de procedimiento><bloque>
     public boolean declaracion_de_procedimiento() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    	if (TActual.tipo==Token.TPALRES_PROCEDURE){
+            encabezado_de_procedimiento();
+            bloque();
+            return true;
+        } else{
+            throw new ExcepASintatico("Se esperaba la palabra reservada 'procedure' en la declaracion de procedimiento.", TActual.nlinea, TActual);
+        }
     }
 
     // <bloque> :
@@ -550,47 +555,113 @@ public class Parser {
     // <encabezado de procedimiento> :
     //      TPALRES_PROCEDURE TIDENTIFICADOR <encabezado de procedimiento'> TPUNTO_Y_COMA
     public boolean encabezado_de_procedimiento() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    	if (TActual.tipo == Token.TPALRES_PROCEDURE) {
+            leerToken();
+            if (TActual.tipo == Token.TIDENTIFICADOR) {
+                leerToken();
+                encabezado_de_procedimientoP();
+                if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+                    leerToken();
+                    return true;
+                } else {
+                    throw new ExcepASintatico("Se esperaba un ';' al final del encabezado de un procedimiento.", TActual.nlinea, TActual);
+                }
+            } else {
+                throw new ExcepASintatico("Se esperaba un identificador en el nombre de un procedimiento en su encabezado.", TActual.nlinea, TActual);
+            }
+        } else {
+            throw new ExcepASintatico("Se esperaba la palabra reservada 'procedure' al inicion de un encabezado de procedimiento.", TActual.nlinea, TActual);
+        }
     }
 
     // <encabezado de procedimiento'> :
     //      TPARENTA <seccion de parametros formales><siguiente seccion de parametros formales> TPARENTC |
     //      lambda
     public boolean encabezado_de_procedimientoP() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if (TActual.tipo == Token.TPARENTA) {
+            leerToken();
+            seccion_de_parametros_formales();
+            siguiente_seccion_de_parametros_formales();
+            if (TActual.tipo == Token.TPARENTC) {
+                leerToken();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un ')' al final de la seccion de parametros formales.", TActual.nlinea, TActual);
+            }
+        } else {
+            return true;
+        }
     }
 
     // <siguiente seccion de parametros formales> :
     //      TPUNTO_Y_COMA <seccion de parametros formales><siguiente seccion de parametros formales> |
     //      lambda
     public boolean siguiente_seccion_de_parametros_formales() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    	if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+           leerToken();
+           seccion_de_parametros_formales();
+           siguiente_seccion_de_parametros_formales();
+             return true;
+        } else {
+           return true;
+        }
     }
 
     // <seccion de parametros formales> :
     //      <grupo de parametros> |
     //      TPALRES_VAR <grupo de parametros>
     public boolean seccion_de_parametros_formales() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    	if (TActual.tipo == Token.TPALRES_VAR) {
+            leerToken();
+            grupo_de_parametros();
+            return true;
+        }
+        if (TActual.tipo == Token.TIDENTIFICADOR) {
+            grupo_de_parametros();
+            return true;
+        }
+
+        throw new ExcepASintatico("Se esperaba una seccion de parametros formales.", TActual.nlinea, TActual);
     }
 
     // <grupo de parametros> :
     //      TIDENTIFICADOR <siguiente grupo de parametros> TDOSPUNTOS TIDENTIFICADOR
     public boolean grupo_de_parametros() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    	 if (TActual.tipo == Token.TIDENTIFICADOR) {
+             leerToken();
+             siguiente_grupo_de_parametros();
+             if (TActual.tipo == Token.TDOSPUNTOS) {
+                 leerToken();
+                 if (TActual.tipo == Token.TIDENTIFICADOR) {
+                     leerToken();
+                     return true;
+                 } else {
+                     throw new ExcepASintatico("Se esperaba un identificador de tipo en la seccion de parametros formales.", TActual.nlinea, TActual);
+                 }
+             } else {
+                 throw new ExcepASintatico("Se esperaba un '=' en la seccion de parametros formales.", TActual.nlinea, TActual);
+             }
+         } else {
+             throw new ExcepASintatico("Se esperaba un identificador de variable en la seccion de parametros formales.", TActual.nlinea, TActual);
+         }
     }
 
     // <siguiente grupo de parametros> :
     //      TCOMA TIDENTIFICADOR <siguiente grupo de parametros> |
     //      lambda
     public boolean siguiente_grupo_de_parametros() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+    	if (TActual.tipo == Token.TCOMA) {
+            leerToken();
+            if (TActual.tipo == Token.TIDENTIFICADOR) {
+                leerToken();
+                siguiente_grupo_de_parametros();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un identificador de variable en la seccion de parametros formales.", TActual.nlinea, TActual);
+            }
+        } else {
+            return true;
+        }
     }
 
     // <parte de definicion de constantes> :
@@ -757,22 +828,54 @@ public class Parser {
     // <declaracion de funcion> :
     //      <encabezado de funcion><bloque>
     public boolean declaracion_de_funcion() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
+        encabezado_de_funcion();
+        bloque();
         return true;
     }
 
     // <encabezado de funcion> :
     //      TPALES_FUNCTION TIDENTIFICADOR <encabezado de funcion'> TDOSPUNTOS TIDENTIFICADOR TPUNTO_Y_COMA
     public boolean encabezado_de_funcion() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
+        if(TActual.tipo == Token.TPALRES_FUNCTION){
+        	leerToken();
+        	encabezado_de_funcionP();
+        	if(TActual.tipo == Token.TDOSPUNTOS){
+        		leerToken();
+        		if(TActual.tipo == Token.TIDENTIFICADOR){
+        			leerToken();
+        			if(TActual.tipo == Token.TPUNTO_Y_COMA){
+        				
+        			}else{
+        				throw new ExcepASintatico("Se esperaba el simbolo ';' al final del encabezado de la funcion.", TActual.nlinea, TActual);
+        			}
+        		}else{
+        			throw new ExcepASintatico("Se esperaba un identificador de funcion en el encabezado de la funcion.", TActual.nlinea, TActual);
+        		}
+        	}else{
+        		throw new ExcepASintatico("Se esperaba el simbolo ':' en el encabezado de la funcion.", TActual.nlinea, TActual);
+        	}
+        }else{
+        	throw new ExcepASintatico("Se esperaba la palabra reservada 'funcion' al comienzo del encabezado de la funcion.", TActual.nlinea, TActual);
+        }
         return true;
     }
 
     // <encabezado de funcion'> :
     //      TPARENTA <seccion de parametros formales><siguiente seccion de parametros formales> TPARENTC
     public boolean encabezado_de_funcionP() throws ExcepALexico, IOException, ExcepASintatico {
-        //TODO
-        return true;
+        if(TActual.tipo == Token.TPARENTA){
+        	leerToken();
+        	seccion_de_parametros_formales();
+        	siguiente_seccion_de_parametros_formales();
+        	if(TActual.tipo == Token.TPARENTC){
+        		leerToken();
+        		return true;
+        	}else{
+        		throw new ExcepASintatico("Se esperaba el simbolo ')' al final de los parametros formales.", TActual.nlinea, TActual);
+        	}
+        }else{
+        	throw new ExcepASintatico("Se esperaba el simbolo '(' al comienzo de los parametros formales.", TActual.nlinea, TActual);
+        }
     }
 
     /*--------------------------------------------------------------*/
