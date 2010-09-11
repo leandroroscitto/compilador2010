@@ -85,7 +85,8 @@ public class Parser {
     //			***********TIPOS***********
     /*--------------------------------------------------------------*/
     // <tipo> : 
-    //      <tipo simple> | <tipo arreglo>
+    //      <tipo simple> |
+    //      <tipo arreglo>
     public boolean tipo() throws ExcepALexico, IOException, ExcepASintatico {
         if (TActual.tipo == Token.TIDENTIFICADOR
                 || TActual.tipo == Token.TNUMERO
@@ -453,7 +454,7 @@ public class Parser {
     }
 
     // <expresion'> :
-    //      <operador de relecion><expresion simple> |
+    //      <operador de relacion><expresion simple> |
     //      lambda
     public boolean expresionP() throws ExcepALexico, IOException, ExcepASintatico {
         if (TActual.tipo == Token.TSIMBOLO_IGUAL
@@ -661,14 +662,19 @@ public class Parser {
     }
 
     // <sentencia de procedimiento'> :
-    //      TPARENTA <parametro actual><siguiente parametro actual> |
+    //      TPARENTA <parametro actual><siguiente parametro actual> TPARENTC |
     //      lambda
     public boolean sentencia_de_procedimientoP() throws ExcepALexico, IOException, ExcepASintatico {
         if (TActual.tipo == Token.TPARENTA) {
             leerToken();
             parametro_actual();
             siguiente_parametro_actual();
-            return true;
+            if (TActual.tipo == Token.TPARENTC) {
+                leerToken();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba el simbolo ')', al final de una sentencia de procedimiento.", TActual.nlinea, TActual);
+            }
         } else {
             throw new ExcepASintatico("Se esperaba el simbolo '(', al comienzo de una sentencia de procedimiento.", TActual.nlinea, TActual);
         }
@@ -703,17 +709,22 @@ public class Parser {
     }
 
     // <sentencia compuesta> :
-    //      TPALRES_BEGIN <sentencia><sentencia compuesta'> TPALRES_END
+    //      TPALRES_BEGIN <sentencia> TPUNTO_Y_COMA <sentencia compuesta'> TPALRES_END
     public boolean sentencia_compuesta() throws ExcepALexico, IOException, ExcepASintatico {
         if (TActual.tipo == Token.TPALRES_BEGIN) {
             leerToken();
             sentencia();
-            sentencia_compuestaP();
-            if (TActual.tipo == Token.TPALRES_END) {
+            if (TActual.tipo == Token.TPUNTO_Y_COMA) {
                 leerToken();
-                return true;
+                sentencia_compuestaP();
+                if (TActual.tipo == Token.TPALRES_END) {
+                    leerToken();
+                    return true;
+                } else {
+                    throw new ExcepASintatico("Se esperaba la palabra reservada 'end' al final de una sentencia compuesta.", TActual.nlinea, TActual);
+                }
             } else {
-                throw new ExcepASintatico("Se esperaba la palabra reservada 'end' al final de una sentencia compuesta.", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba un ';' al final de una sentencia.", TActual.nlinea, TActual);
             }
         } else {
             throw new ExcepASintatico("Se esperaba la palabra reservada 'begin' al inicio de una sentencia compuesta.", TActual.nlinea, TActual);
@@ -721,13 +732,21 @@ public class Parser {
     }
 
     // <sentencia compuesta'> :
-    //      TPUNO_Y_COMA <sentencia> |
+    //      <sentencia> TPUNTO_Y_COMA <sentencia compuesta'> |
     //      lambda
     public boolean sentencia_compuestaP() throws ExcepALexico, IOException, ExcepASintatico {
-        if (TActual.tipo == Token.TPUNTO_Y_COMA) {
-            leerToken();
+        if (TActual.tipo == Token.TIDENTIFICADOR
+                || TActual.tipo == Token.TPALRES_BEGIN
+                || TActual.tipo == Token.TPALRES_IF
+                || TActual.tipo == Token.TPALRES_WHILE) {
             sentencia();
-            return true;
+            if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+                leerToken();
+                sentencia_compuestaP();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un ';' al final de una sentencia.", TActual.nlinea, TActual);
+            }
         } else {
             return true;
         }
@@ -742,7 +761,7 @@ public class Parser {
             if (TActual.tipo == Token.TPALRES_THEN) {
                 leerToken();
                 sentencia();
-                sentencia_if();
+                sentencia_ifP();
                 return true;
             } else {
                 throw new ExcepASintatico("Se esperaba la palabra reservada 'then' al final de la sentencia.", TActual.nlinea, TActual);
@@ -799,8 +818,10 @@ public class Parser {
     }
 
     // <bloque> :
-    //      <parte de defincion de constantes><parte de defincion de tipos>
-    //      <parte de declaracion de variables><parte de declaracion de funciones y procedimientos>
+    //      <parte de defincion de constantes>
+    //      <parte de defincion de tipos>
+    //      <parte de declaracion de variables>
+    //      <parte de declaracion de funciones y procedimientos>
     //      <parte de sentencias>
     public boolean bloque() throws ExcepALexico, IOException, ExcepASintatico {
         parte_de_definicion_de_constantes();
@@ -1045,8 +1066,8 @@ public class Parser {
     //      <declaracion de procedimiento o funcion> TPUNTO_Y_COMA <siguiente declaracion de procedimiento o funcion> |
     //      lambda
     public boolean siguiente_declaracion_de_procedimiento_o_funcion() throws ExcepALexico, IOException, ExcepASintatico {
-
-        if ((TActual.tipo == Token.TPALRES_FUNCTION) || (TActual.tipo == Token.TPALRES_PROCEDURE)) {
+        if ((TActual.tipo == Token.TPALRES_FUNCTION)
+                || (TActual.tipo == Token.TPALRES_PROCEDURE)) {
             declaracion_de_procedimiento_o_funcion();
             if (TActual.tipo == Token.TPUNTO_Y_COMA) {
                 leerToken();
@@ -1075,7 +1096,8 @@ public class Parser {
         throw new ExcepASintatico("Se esperaba una declaracion de procedimiento o funcion.", TActual.nlinea, TActual);
     }
 
-    // <parte de sentencias> : <sentencia compuesta>
+    // <parte de sentencias> :
+    //      <sentencia compuesta>
     public boolean parte_de_sentencias() throws ExcepALexico, IOException, ExcepASintatico {
         sentencia_compuesta();
         return true;
