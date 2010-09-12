@@ -560,12 +560,13 @@ public class Parser {
     }
 
     // <siguiente parametro actual> :
-    //      TCOMA <parametro actual> | 
+    //      TCOMA <parametro actual><siguiente parametro actual> |
     //      lambda
     public boolean siguiente_parametro_actual() throws ExcepALexico, IOException, ExcepASintatico {
         if (TActual.tipo == Token.TCOMA) {
             leerToken();
             parametro_actual();
+            siguiente_parametro_actual();
             return true;
         } else {
             return true;
@@ -607,7 +608,8 @@ public class Parser {
 
     // <sentencia simple'> :
     //      <sentencia de asignacion'> |
-    //      <sentencia de procedimiento'>
+    //      <sentencia de procedimiento'> |
+    //      lambda
     public boolean sentencia_simpleP() throws ExcepALexico, IOException, ExcepASintatico {
         if ((TActual.tipo == Token.TCORA)
                 || (TActual.tipo == Token.TASIGN)) {
@@ -618,7 +620,8 @@ public class Parser {
             sentencia_de_procedimientoP();
             return true;
         }
-        throw new ExcepASintatico("Se esperaba una sentencia de asignacion o una sentencia de procedimiento validos.", TActual.nlinea, TActual);
+        //throw new ExcepASintatico("Se esperaba una sentencia de asignacion o una sentencia de procedimiento validos.", TActual.nlinea, TActual);
+        return true;
     }
 
     // <sentencia de asignacion> :
