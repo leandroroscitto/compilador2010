@@ -676,7 +676,7 @@ public class Parser {
                 throw new ExcepASintatico("Se esperaba el simbolo ')', al final de una sentencia de procedimiento.", TActual.nlinea, TActual);
             }
         } else {
-            throw new ExcepASintatico("Se esperaba el simbolo '(', al comienzo de una sentencia de procedimiento.", TActual.nlinea, TActual);
+            return true;
         }
 
     }
@@ -1147,7 +1147,8 @@ public class Parser {
     }
 
     // <encabezado de funcion'> :
-    //      TPARENTA <seccion de parametros formales><siguiente seccion de parametros formales> TPARENTC
+    //      TPARENTA <seccion de parametros formales><siguiente seccion de parametros formales> TPARENTC |
+    //      lambda
     public boolean encabezado_de_funcionP() throws ExcepALexico, IOException, ExcepASintatico {
         if (TActual.tipo == Token.TPARENTA) {
             leerToken();
@@ -1160,7 +1161,7 @@ public class Parser {
                 throw new ExcepASintatico("Se esperaba el simbolo ')' al final de los parametros formales.", TActual.nlinea, TActual);
             }
         } else {
-            throw new ExcepASintatico("Se esperaba el simbolo '(' al comienzo de los parametros formales.", TActual.nlinea, TActual);
+            return true;
         }
     }
 
