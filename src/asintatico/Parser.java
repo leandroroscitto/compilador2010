@@ -578,7 +578,8 @@ public class Parser {
     /*--------------------------------------------------------------*/
     // <sentencia> :
     //      <sentencia simple> |
-    //      <sentencia estructurada>
+    //      <sentencia estructurada> |
+    //      lambda
     public boolean sentencia() throws ExcepALexico, IOException, ExcepASintatico {
         if (TActual.tipo == Token.TIDENTIFICADOR) {
             sentencia_simple();
@@ -590,7 +591,7 @@ public class Parser {
             sentencia_estructurada();
             return true;
         }
-        throw new ExcepASintatico("Se esperaba una sentencia simple o una sentencia estructurada validas.", TActual.nlinea, TActual);
+        return true;
     }
 
     // <sentencia simple> :
@@ -712,22 +713,17 @@ public class Parser {
     }
 
     // <sentencia compuesta> :
-    //      TPALRES_BEGIN <sentencia> TPUNTO_Y_COMA <sentencia compuesta'> TPALRES_END
+    //      TPALRES_BEGIN <sentencia><sentencia compuesta'> TPALRES_END
     public boolean sentencia_compuesta() throws ExcepALexico, IOException, ExcepASintatico {
         if (TActual.tipo == Token.TPALRES_BEGIN) {
             leerToken();
             sentencia();
-            if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+            sentencia_compuestaP();
+            if (TActual.tipo == Token.TPALRES_END) {
                 leerToken();
-                sentencia_compuestaP();
-                if (TActual.tipo == Token.TPALRES_END) {
-                    leerToken();
-                    return true;
-                } else {
-                    throw new ExcepASintatico("Se esperaba la palabra reservada 'end' al final de una sentencia compuesta.", TActual.nlinea, TActual);
-                }
+                return true;
             } else {
-                throw new ExcepASintatico("Se esperaba un ';' al final de una sentencia.", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba la palabra reservada 'end' al final de una sentencia compuesta.", TActual.nlinea, TActual);
             }
         } else {
             throw new ExcepASintatico("Se esperaba la palabra reservada 'begin' al inicio de una sentencia compuesta.", TActual.nlinea, TActual);
@@ -735,20 +731,20 @@ public class Parser {
     }
 
     // <sentencia compuesta'> :
-    //      <sentencia> TPUNTO_Y_COMA <sentencia compuesta'> |
+    //      TPUNTO_Y_COMA<sentencia><sentencia compuesta'> |
     //      lambda
     public boolean sentencia_compuestaP() throws ExcepALexico, IOException, ExcepASintatico {
-        if (TActual.tipo == Token.TIDENTIFICADOR
-                || TActual.tipo == Token.TPALRES_BEGIN
-                || TActual.tipo == Token.TPALRES_IF
-                || TActual.tipo == Token.TPALRES_WHILE) {
-            sentencia();
-            if (TActual.tipo == Token.TPUNTO_Y_COMA) {
-                leerToken();
+        if (TActual.tipo == Token.TPUNTO_Y_COMA) {
+            leerToken();
+            if (TActual.tipo == Token.TIDENTIFICADOR
+                    || TActual.tipo == Token.TPALRES_BEGIN
+                    || TActual.tipo == Token.TPALRES_IF
+                    || TActual.tipo == Token.TPALRES_WHILE) {
+                sentencia();
                 sentencia_compuestaP();
                 return true;
             } else {
-                throw new ExcepASintatico("Se esperaba un ';' al final de una sentencia.", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba un una sentencia.", TActual.nlinea, TActual);
             }
         } else {
             return true;
