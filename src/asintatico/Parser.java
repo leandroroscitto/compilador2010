@@ -54,14 +54,19 @@ public class Parser {
         }
 
         // Si comienza con un signo
-        signo();
-        if ((TActual.tipo == Token.TNUMERO)
-                || (TActual.tipo == Token.TIDENTIFICADOR)) {
-            leerToken();
-            return true;
-        } else {
-            throw new ExcepASintatico("Se esperaba un identificador o un numero para la constante.", TActual.nlinea, TActual);
+        if (TActual.tipo == Token.TOPERMAS
+                || TActual.tipo == Token.TOPERMENOS) {
+            signo();
+            if ((TActual.tipo == Token.TNUMERO)
+                    || (TActual.tipo == Token.TIDENTIFICADOR)) {
+                leerToken();
+                return true;
+            } else {
+                throw new ExcepASintatico("Se esperaba un identificador o un numero para la constante.", TActual.nlinea, TActual);
+            }
         }
+
+        throw new ExcepASintatico("Se esperaba una constante.", TActual.nlinea, TActual);
     }
 
     // <defincion de constante> :
@@ -736,16 +741,9 @@ public class Parser {
     public boolean sentencia_compuestaP() throws ExcepALexico, IOException, ExcepASintatico {
         if (TActual.tipo == Token.TPUNTO_Y_COMA) {
             leerToken();
-            if (TActual.tipo == Token.TIDENTIFICADOR
-                    || TActual.tipo == Token.TPALRES_BEGIN
-                    || TActual.tipo == Token.TPALRES_IF
-                    || TActual.tipo == Token.TPALRES_WHILE) {
-                sentencia();
-                sentencia_compuestaP();
-                return true;
-            } else {
-                throw new ExcepASintatico("Se esperaba un una sentencia.", TActual.nlinea, TActual);
-            }
+            sentencia();
+            sentencia_compuestaP();
+            return true;
         } else {
             return true;
         }
