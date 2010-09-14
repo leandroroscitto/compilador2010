@@ -10,8 +10,6 @@ import excepciones.ExcepASintatico;
 public class Principal2 {
 
     public static void main(String[] args) throws ExcepALexico, ExcepASintatico {
-        args = new String[1];
-        args[0] = "Ejemplo1.pas";
         if (args.length > 0) {
             PrintStream Salida;
             try {
