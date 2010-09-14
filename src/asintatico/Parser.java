@@ -179,19 +179,6 @@ public class Parser {
         }
     }
 
-    // <tipo subrango> :
-    //      <constante> TDOBLEPUNTO <constante>
-    public void tipo_subrango() throws ExcepASintatico, ExcepALexico, IOException {
-        constante();
-        if (TActual.tipo == Token.TDOBLEPUNTO) {
-            leerToken();
-            constante();
-            return;
-        } else {
-            throw new ExcepASintatico("Se esperaba '..' en la declaracion del subrango.", TActual.nlinea, TActual);
-        }
-    }
-
     // <tipo arreglo> :
     //      TPALRES_ARRAY TCORA <tipo simple> TCORC TPALRES_OF <tipo simple>
     public void tipo_arreglo() throws ExcepALexico, IOException, ExcepASintatico {
@@ -259,18 +246,6 @@ public class Parser {
         }
     }
 
-    // <variable> :
-    //      TIDENTIFICADOR <variable'>
-    public void variable() throws ExcepALexico, IOException, ExcepASintatico {
-        if (TActual.tipo == Token.TIDENTIFICADOR) {
-            leerToken();
-            variableP();
-            return;
-        } else {
-            throw new ExcepASintatico("Se esperaba un identificador de variable.", TActual.nlinea, TActual);
-        }
-    }
-
     // <variable'> :
     //      TCORA <expresion> TCORC |
     //      lambda
@@ -289,46 +264,9 @@ public class Parser {
         }
     }
 
-    // #<variable indexada> :
-    //      TIDENTIFICADOR TCORA <expresion> TCORC
-    public void variable_indexada() throws ExcepALexico, IOException, ExcepASintatico {
-        if (TActual.tipo == Token.TIDENTIFICADOR) {
-            leerToken();
-            if (TActual.tipo == Token.TCORA) {
-                leerToken();
-                expresion();
-                if (TActual.tipo == Token.TCORC) {
-                    leerToken();
-                    return;
-                } else {
-                    throw new ExcepASintatico("Se esperaba un ']' en la variable indexada.", TActual.nlinea, TActual);
-                }
-            } else {
-                throw new ExcepASintatico("Se esperaba un '[' en la variable indexada.", TActual.nlinea, TActual);
-            }
-        } else {
-            throw new ExcepASintatico("Se esperaba un identificador al inicio de la variable indexada.", TActual.nlinea, TActual);
-        }
-    }
-
     /*--------------------------------------------------------------*/
     //             ***********EXPRESIONES***********
     /*--------------------------------------------------------------*/
-    // #<constante sin signo> : 
-    //      TNUMERO | 
-    //      TIDENTIFICADOR | 
-    //      TCARACTER
-    public void constante_sin_signo() throws ExcepALexico, IOException, ExcepASintatico {
-        if (TActual.tipo == Token.TNUMERO
-                || TActual.tipo == Token.TIDENTIFICADOR
-                || TActual.tipo == Token.TCARACTER) {
-            leerToken();
-            return;
-        } else {
-            throw new ExcepASintatico("Se esperaba un numero, identificador o caracter en la constante sin signo.", TActual.nlinea, TActual);
-        }
-    }
-
     // <factor> :
     //      TIDENTIFICADOR <factor'> |
     //      TNUMERO |
@@ -529,18 +467,6 @@ public class Parser {
     /*--------------------------------------------------------------*/
     //      ***********DESIGNADOR DE FUNCION***********
     /*--------------------------------------------------------------*/
-    // <designador de funcion> :
-    //      TIDENTIFICADOR <designador de funcion'>
-    public void designador_de_funcion() throws ExcepALexico, IOException, ExcepASintatico {
-        if (TActual.tipo == Token.TIDENTIFICADOR) {
-            leerToken();
-            designador_de_funcionP();
-            return;
-        } else {
-            throw new ExcepASintatico("Se esperaba un identificador para el designador de funcion.", TActual.nlinea, TActual);
-        }
-    }
-
     // <designador de funcion'> :
     //      TPARENTA <parametro actual> <siguiente parametro actual> TPARENTC |
     //      lambda
@@ -625,18 +551,6 @@ public class Parser {
         return;
     }
 
-    // <sentencia de asignacion> :
-    //      TIDENTIFICADOR <sentencia de asignacion'>
-    public void sentencia_de_asignacion() throws ExcepALexico, IOException, ExcepASintatico {
-        if (TActual.tipo == Token.TIDENTIFICADOR) {
-            leerToken();
-            sentencia_de_asignacionP();
-            return;
-        } else {
-            throw new ExcepASintatico("Se esperaba un identificador en la sentencia de asignacion.", TActual.nlinea, TActual);
-        }
-    }
-
     // <sentencia de asignacion'> :
     //      <variable'> TASIGN <expresion> |
     //      TASIGN <expresion>
@@ -650,18 +564,6 @@ public class Parser {
             return;
         } else {
             throw new ExcepASintatico("Se esperaba el simbolo ':=' en la sentencia de asignacion.", TActual.nlinea, TActual);
-        }
-    }
-
-    // <sentencia de procedimiento> :
-    //      TIDENTIFICADOR <sentencia de procedimiento'>
-    public void sentencia_de_procedimiento() throws ExcepALexico, IOException, ExcepASintatico {
-        if (TActual.tipo == Token.TIDENTIFICADOR) {
-            leerToken();
-            sentencia_de_procedimientoP();
-            return;
-        } else {
-            throw new ExcepASintatico("Se esperaba un identificador al comienzo de una sentencia de procedimiento.", TActual.nlinea, TActual);
         }
     }
 
