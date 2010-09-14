@@ -25,8 +25,6 @@ public class Principal2 {
                     Salida = new PrintStream(args[1]);
                 }
                 Salida.println("Archivo de entrada:'" + args[0] + "':");
-                Salida.println("====================================");
-                Salida.println();
 
                 // Crea el analizador sintactico, con el nombre
                 // del archivo de entrada como parametro
@@ -40,7 +38,6 @@ public class Principal2 {
                 // Si llega aqui sin producer una excepcion, el codigo
                 // de entrada es sintacticamente correcto
 
-                Salida.println();
                 Salida.println("El proceso se completo con exito.");
             } catch (IOException e) {
                 System.out.println("IOException capturada, no se pudo leer del archivo.");
