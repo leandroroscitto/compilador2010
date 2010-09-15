@@ -11,7 +11,7 @@ public class ExcepASintatico extends Exception {
     public Token UltToken;
 
     public ExcepASintatico(String msg, int nlin, Token tok) {
-        super("Linea " + nlin + ": " + msg + " Se encontro en cambio " + tok.lexema + ".");
+        super("Linea " + nlin + ": " + msg + " Se encontro '" + tok.lexema + "'.");
         NLinea = nlin;
         UltToken = tok;
     }

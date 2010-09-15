@@ -142,7 +142,7 @@ public class Parser {
                 constante();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo '..'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo '..'.", TActual.nlinea, TActual);
             }
         }
         if (TActual.tipo == Token.TOPERMAS
@@ -156,7 +156,7 @@ public class Parser {
                     constante();
                     return;
                 } else {
-                    throw new ExcepASintatico("Se esperaba el simbolo '..'", TActual.nlinea, TActual);
+                    throw new ExcepASintatico("Se esperaba el simbolo '..'.", TActual.nlinea, TActual);
                 }
             } else {
                 throw new ExcepASintatico("Declaracion de constante invalida.", TActual.nlinea, TActual);
@@ -197,10 +197,10 @@ public class Parser {
                         throw new ExcepASintatico("Se esperaba la palabra reservada 'of'.", TActual.nlinea, TActual);
                     }
                 } else {
-                    throw new ExcepASintatico("Se esperaba el simbolo ']'", TActual.nlinea, TActual);
+                    throw new ExcepASintatico("Se esperaba el simbolo ']'.", TActual.nlinea, TActual);
                 }
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo '['", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo '['.", TActual.nlinea, TActual);
             }
         } else {
             throw new ExcepASintatico("Se esperaba la palabra reservada 'array'.", TActual.nlinea, TActual);
@@ -221,7 +221,7 @@ public class Parser {
                 tipo();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ':'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ':'.", TActual.nlinea, TActual);
             }
         } else {
             throw new ExcepASintatico("Se esperaba un identificador.", TActual.nlinea, TActual);
@@ -257,7 +257,7 @@ public class Parser {
                 leerToken();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ']'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ']'.", TActual.nlinea, TActual);
             }
         } else {
             return;
@@ -291,7 +291,7 @@ public class Parser {
                 leerToken();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ')'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ')'.", TActual.nlinea, TActual);
             }
         }
         if (TActual.tipo == Token.TOPER_NOT) {
@@ -479,7 +479,7 @@ public class Parser {
                 leerToken();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ')'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ')'.", TActual.nlinea, TActual);
             }
         } else {
             return;
@@ -563,7 +563,7 @@ public class Parser {
             expresion();
             return;
         } else {
-            throw new ExcepASintatico("Se esperaba el simbolo ':='", TActual.nlinea, TActual);
+            throw new ExcepASintatico("Se esperaba el simbolo ':='.", TActual.nlinea, TActual);
         }
     }
 
@@ -579,7 +579,7 @@ public class Parser {
                 leerToken();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ')'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ')'.", TActual.nlinea, TActual);
             }
         } else {
             return;
@@ -738,7 +738,7 @@ public class Parser {
                     leerToken();
                     return;
                 } else {
-                    throw new ExcepASintatico("Se esperaba el simbolo ';'", TActual.nlinea, TActual);
+                    throw new ExcepASintatico("Se esperaba el simbolo ';'.", TActual.nlinea, TActual);
                 }
             } else {
                 throw new ExcepASintatico("Se esperaba un identificador.", TActual.nlinea, TActual);
@@ -760,7 +760,7 @@ public class Parser {
                 leerToken();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ')'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ')'.", TActual.nlinea, TActual);
             }
         } else {
             return;
@@ -813,7 +813,7 @@ public class Parser {
                     throw new ExcepASintatico("Se esperaba un identificador.", TActual.nlinea, TActual);
                 }
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ':'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ':'.", TActual.nlinea, TActual);
             }
         } else {
             throw new ExcepASintatico("Se esperaba un identificador.", TActual.nlinea, TActual);
@@ -850,7 +850,7 @@ public class Parser {
                 siguiente_definicion_de_constante();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ';'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ';'.", TActual.nlinea, TActual);
             }
         } else {
             return;
@@ -868,7 +868,7 @@ public class Parser {
                 siguiente_definicion_de_constante();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ';'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ';'.", TActual.nlinea, TActual);
             }
         } else {
             return;
@@ -887,7 +887,7 @@ public class Parser {
                 siguiente_definicion_de_tipo();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ';'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ';'.", TActual.nlinea, TActual);
             }
         } else {
             return;
@@ -905,7 +905,7 @@ public class Parser {
                 siguiente_definicion_de_tipo();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ';'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ';'.", TActual.nlinea, TActual);
             }
         } else {
             return;
@@ -924,7 +924,7 @@ public class Parser {
                 siguiente_declaracion_de_variable();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ';'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ';'.", TActual.nlinea, TActual);
             }
         } else {
             return;
@@ -942,7 +942,7 @@ public class Parser {
                 siguiente_declaracion_de_variable();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ';'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ';'.", TActual.nlinea, TActual);
             }
         } else {
             return;
@@ -968,7 +968,7 @@ public class Parser {
                 siguiente_declaracion_de_procedimiento_o_funcion();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ';'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ';'.", TActual.nlinea, TActual);
             }
         } else {
             return;
@@ -1024,13 +1024,13 @@ public class Parser {
                             leerToken();
                             return;
                         } else {
-                            throw new ExcepASintatico("Se esperaba el simbolo ';'", TActual.nlinea, TActual);
+                            throw new ExcepASintatico("Se esperaba el simbolo ';'.", TActual.nlinea, TActual);
                         }
                     } else {
                         throw new ExcepASintatico("Se esperaba un identificador.", TActual.nlinea, TActual);
                     }
                 } else {
-                    throw new ExcepASintatico("Se esperaba el simbolo ':'", TActual.nlinea, TActual);
+                    throw new ExcepASintatico("Se esperaba el simbolo ':'.", TActual.nlinea, TActual);
                 }
             } else {
                 throw new ExcepASintatico("Se esperaba un identificador.", TActual.nlinea, TActual);
@@ -1052,7 +1052,7 @@ public class Parser {
                 leerToken();
                 return;
             } else {
-                throw new ExcepASintatico("Se esperaba el simbolo ')'", TActual.nlinea, TActual);
+                throw new ExcepASintatico("Se esperaba el simbolo ')'.", TActual.nlinea, TActual);
             }
         } else {
             return;
@@ -1076,16 +1076,16 @@ public class Parser {
                         leerToken();
                         return;
                     } else {
-                        throw new ExcepASintatico("Se esperaba el simbolo '.'", TActual.nlinea, TActual);
+                        throw new ExcepASintatico("Se esperaba el simbolo '.'.", TActual.nlinea, TActual);
                     }
                 } else {
-                    throw new ExcepASintatico("Se esperaba el simbolo ';'", TActual.nlinea, TActual);
+                    throw new ExcepASintatico("Se esperaba el simbolo ';'.", TActual.nlinea, TActual);
                 }
             } else {
                 throw new ExcepASintatico("Se esperaba un identificador.", TActual.nlinea, TActual);
             }
         } else {
-            throw new ExcepASintatico("Se esperaba la palabra reservada 'PROGRAM'.", TActual.nlinea, TActual);
+            throw new ExcepASintatico("Se esperaba la palabra reservada 'program'.", TActual.nlinea, TActual);
         }
     }
 
