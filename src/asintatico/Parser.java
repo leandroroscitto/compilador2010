@@ -41,8 +41,8 @@ public class Parser {
   //      TNUMERO |
   //      TCARACTER |
   //      TIDENTIFICADOR |
-  //      <signo> TNUMERO |
-  //      <signo> TIDENTIFICADOR
+  //      <signo> <Constante'>
+
   public void constante() throws ExcepALexico, IOException, ExcepASintatico {
     // Si comienza con un numero, caracter o identificador
     if ((TActual.tipo == Token.TNUMERO)
@@ -55,18 +55,47 @@ public class Parser {
     if (TActual.tipo == Token.TOPERMAS
             || TActual.tipo == Token.TOPERMENOS) {
       signo();
-      if ((TActual.tipo == Token.TNUMERO)
-              || (TActual.tipo == Token.TIDENTIFICADOR)) {
-        leerToken();
-        return;
-      } else {
-        throw new ExcepASintatico("Declaracion de constante invalida.", TActual.nlinea, TActual);
-      }
+      constanteP();
     }
     // Si no es nada de lo de arriba
     throw new ExcepASintatico("Declaracion de constante invalida.", TActual.nlinea, TActual);
   }
 
+  // <constante'>:
+  //		TNUMERO |
+  //     	TIDENTIFICADOR
+  public void constanteP() throws ExcepALexico, IOException, ExcepASintatico {
+	      if ((TActual.tipo == Token.TNUMERO)
+	              || (TActual.tipo == Token.TIDENTIFICADOR)) {
+	        leerToken();
+	        return;
+	      } else {
+	        throw new ExcepASintatico("Declaracion de constante invalida.", TActual.nlinea, TActual);
+	      }
+	  }  
+ 
+  //<constante de subrango> :
+  //      TNUMERO |
+  //      TIDENTIFICADOR |
+  //      <signo> <Constante'>
+  public void constante_de_subrango() throws ExcepALexico, IOException, ExcepASintatico {
+	    // Si comienza con un numero, caracter o identificador
+	    if ((TActual.tipo == Token.TNUMERO)
+	            || (TActual.tipo == Token.TIDENTIFICADOR)) {
+	      leerToken();
+	      return;
+	    }
+	    // Si comienza con un signo
+	    if (TActual.tipo == Token.TOPERMAS
+	            || TActual.tipo == Token.TOPERMENOS) {
+	      signo();
+	      constanteP();
+	      return;
+	    }
+	    // Si no es nada de lo de arriba
+	    throw new ExcepASintatico("Declaracion de constante invalida.", TActual.nlinea, TActual);
+	  } 
+  
   // <defincion de constante> :
   //      TIDENTIFICADOR TSIMBOLO_IGUAL <constante>
   public void definicion_de_constante() throws ExcepALexico, IOException, ExcepASintatico {
@@ -123,24 +152,24 @@ public class Parser {
     }
   }
 
+
   // <tipo simple> :
-  //      TIDENTIFICADOR<tipo simple'> |
-  //      TNUMERO TDOBLEPUNTO <constante> |
-  //      TCARACTER TDOBLEPUNTO <constante> |
-  //      TOPERMAS TNUMERO TDOBLEPUNTO <constante> |
-  //      TOPERMENOS TIDENTIFICADOR TDOBLEPUNTO <constante>
+  //      TIDENTIFICADOR <tipo simple'> |
+  //      TNUMERO TDOBLEPUNTO <constante de subrango> |
+  //      TOPERMAS <tipo simple de signo>  
+  //      TOPERMENOS <tipo simple de signo>
+ 
   public void tipo_simple() throws ExcepALexico, IOException, ExcepASintatico {
     if (TActual.tipo == Token.TIDENTIFICADOR) {
       leerToken();
       tipo_simpleP();
       return;
     }
-    if (TActual.tipo == Token.TNUMERO
-            || TActual.tipo == Token.TCARACTER) {
+    if (TActual.tipo == Token.TNUMERO) {
       leerToken();
       if (TActual.tipo == Token.TDOBLEPUNTO) {
         leerToken();
-        constante();
+        constante_de_subrango();
         return;
       } else {
         throw new ExcepASintatico("Se esperaba el simbolo '..'.", TActual.nlinea, TActual);
@@ -149,31 +178,41 @@ public class Parser {
     if (TActual.tipo == Token.TOPERMAS
             || TActual.tipo == Token.TOPERMENOS) {
       leerToken();
-      if (TActual.tipo == Token.TNUMERO
-              || TActual.tipo == Token.TIDENTIFICADOR) {
-        leerToken();
-        if (TActual.tipo == Token.TDOBLEPUNTO) {
-          leerToken();
-          constante();
-          return;
-        } else {
-          throw new ExcepASintatico("Se esperaba el simbolo '..'.", TActual.nlinea, TActual);
-        }
-      } else {
-        throw new ExcepASintatico("Se esperaba un tipo.", TActual.nlinea, TActual);
-      }
+      tipo_simple_de_signo();
+      return;
     }
-
     throw new ExcepASintatico("Se esperaba un tipo.", TActual.nlinea, TActual);
   }
 
+  
+  //<tipo simple de signo>:
+  //	TNUMERO TDOBLEPUNTO <constante de subrango> |
+  //	TIDENTIFICADOR TDOBLEPUNTO <constante de subrango> |
+  public void tipo_simple_de_signo() throws ExcepALexico, IOException, ExcepASintatico {
+	      if (TActual.tipo == Token.TNUMERO
+	              || TActual.tipo == Token.TIDENTIFICADOR) {
+	        leerToken();
+	        if (TActual.tipo == Token.TDOBLEPUNTO) {
+	          leerToken();
+	          constante_de_subrango();
+	          return;
+	        } else {
+	          throw new ExcepASintatico("Se esperaba el simbolo '..'.", TActual.nlinea, TActual);
+	        }
+	      } else {
+	        throw new ExcepASintatico("Se esperaba un tipo.", TActual.nlinea, TActual);
+	      }
+    }
+
+  
+  
   // <tipo simple'> :
-  //      TDOBLEPUNT <constante> |
+  //      TDOBLEPUNT <constante de subrango> |
   //      lambda
   public void tipo_simpleP() throws ExcepALexico, IOException, ExcepASintatico {
     if (TActual.tipo == Token.TDOBLEPUNTO) {
       leerToken();
-      constante();
+      constante_de_subrango();
       return;
     } else {
       return;
