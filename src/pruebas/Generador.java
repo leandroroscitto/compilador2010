@@ -14,8 +14,8 @@ public class Generador {
 			'7', '8', '9');
 	private static List<Character> Digitos = Arrays.asList('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
 	private static List<Character> Simbolos = Arrays.asList('=', '>', '<', ':', '.', '+', '-', '(', ')', ',', ';');
-	private static List<Character> Simbolos2 = Arrays.asList('=', '>', '<', ':', '.', '+', '-', '\'', '*', '(', ')',
-			',', ';');
+	/*private static List<Character> Simbolos2 = Arrays.asList('=', '>', '<', ':', '.', '+', '-', '\'', '*', '(', ')',
+			',', ';');*/
 
 	private static String genIdent(int longitud) {
 		Random R = new Random();
