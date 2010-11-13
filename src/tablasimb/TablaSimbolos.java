@@ -70,9 +70,9 @@ public class TablaSimbolos {
 		taux.put(lexema, new Constante(lexema, te, valor));
 	}
 	
-	public void guardar_variable_en_tabla(String lexema, TTipo te, int nivelL, int desp){
+	public void guardar_variable_en_tabla(String lexema, TTipo te, int nivelL, int desp, boolean espv){
 		Hashtable<String, Simbolo> taux = PTabla.tope();
-		taux.put(lexema, new Variable(lexema, te, nivelL, desp));
+		taux.put(lexema, new Variable(lexema, te, nivelL, desp,espv));
 	}
 	
 	public void guardar_tipo_en_tabla(String lexema, TTipo te){
