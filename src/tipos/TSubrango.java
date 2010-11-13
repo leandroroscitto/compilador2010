@@ -13,7 +13,7 @@ public class TSubrango extends TSimple {
 	public boolean comparar(TTipo tipo){
 		if (tipo.clase == TPSUBRANGO){
 			TSubrango ts = (TSubrango)tipo;
-			return (ts.tamano == this.tamano);
+			return (ts.base == this.base) && (ts.tamano == this.tamano);
 		}else{
 			return false;
 		}
