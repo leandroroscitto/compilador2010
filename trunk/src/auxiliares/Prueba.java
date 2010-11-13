@@ -6,6 +6,7 @@ public class Prueba {
 
 	public static void main(String[] args) throws FileNotFoundException{
 		MEPa m = new MEPa("mepa.txt");
+		m.generarEntSal();
 		m.Mimprimir(new String[]{"12","23","SUMA"});
 	}
 	

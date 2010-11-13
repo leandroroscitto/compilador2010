@@ -6,8 +6,10 @@ import java.io.PrintStream;
 public class MEPa {
 	private PrintStream PS;
 	
-	public boolean MestaEnFuncion;
-	public String MLexemaUnidad;
+	public boolean MestaEnFuncion = false;
+	public String MLexemaUnidad = "";
+	
+	public int MposVar = 0;
 	
 	public int EtiquetaAct = 0;
 	
@@ -15,7 +17,7 @@ public class MEPa {
 		PS = new PrintStream(codint);
 	}
 	
-	public void Mimprimir(String[] args){
+	public void Mimprimir(String... args){
 		for (String arg:args){
 			PS.print(arg);
 			PS.print(" ");
@@ -26,6 +28,48 @@ public class MEPa {
 	public String MobtProxEti(){
 		EtiquetaAct++;
 		return "label"+String.valueOf(EtiquetaAct);
+	}
+	
+	public void generarEntSal(){
+		// Imprimir entero
+		Mimprimir("writeE","ENPR","1");
+		Mimprimir("IMPR");
+		Mimprimir("RTPR","1","1");
+		
+		// Imprimir entero y nueva linea
+		Mimprimir("writelnE","ENPR","1");
+		Mimprimir("IMLN");
+		Mimprimir("RTPR","1","1");
+		
+		// Leo entero
+		Mimprimir("readE","ENPR","1");
+		Mimprimir("LEER");
+		Mimprimir("RTPR","1","1");
+		
+		// Leo entero y nueva linea
+		Mimprimir("writelnE","ENPR","1");
+		Mimprimir("LELN");
+		Mimprimir("RTPR","1","1");
+		
+		// Imprimir caracter
+		Mimprimir("writeE","ENPR","1");
+		Mimprimir("IMCH");
+		Mimprimir("RTPR","1","1");
+		
+		// Imprimir caracter y nueva linea
+		Mimprimir("writelnE","ENPR","1");
+		Mimprimir("IMCN");
+		Mimprimir("RTPR","1","1");
+		
+		// Leo caracter
+		Mimprimir("readE","ENPR","1");
+		Mimprimir("LECH");
+		Mimprimir("RTPR","1","1");
+		
+		// Leo caracter y nueva linea
+		Mimprimir("writelnE","ENPR","1");
+		Mimprimir("LECN");
+		Mimprimir("RTPR","1","1");
 	}
 	
 	public void cerrarSalida(){
