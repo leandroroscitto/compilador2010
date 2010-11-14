@@ -9,6 +9,8 @@ public class MEPa {
 	public boolean MestaEnFuncion = false;
 	public String MLexemaUnidad = "";
 	
+	public boolean MretFuncion = false;
+	
 	public int MposVar = 0;
 	
 	public int EtiquetaAct = 0;

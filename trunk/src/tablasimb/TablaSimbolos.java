@@ -86,8 +86,8 @@ public class TablaSimbolos {
 	}
 	
 	public void guardar_procedimiento_en_tabla(String lexema, ArrayList<ParametroForm> list, int nivelL, String etiqueta){
-		Hashtable<String, Simbolo> taux = PTabla.tope();
-		
+		//guarda el procedimiento en el nivel lexico anterior
+		Hashtable<String, Simbolo> taux = PTabla.get(PTabla.size()-2);
 		
 		int cantpf = list.size();
 		TTipo[] tipopf = new TTipo[cantpf];
@@ -105,7 +105,8 @@ public class TablaSimbolos {
 	}
 	
 	public void guardar_funcion_en_tabla(String lexema, ArrayList<ParametroForm> list, TTipo tr, int nivelL, int desp, String etiqueta){
-		Hashtable<String, Simbolo> taux = PTabla.tope();
+		//guarda la funcion en el nivel lexixo anterior.
+		Hashtable<String, Simbolo> taux = PTabla.get(PTabla.size()-2);
 		
 		
 		int cantpf = list.size();
