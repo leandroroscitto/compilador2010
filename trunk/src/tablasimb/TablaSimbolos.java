@@ -7,6 +7,7 @@ import auxiliares.ParametroForm;
 
 import tipos.TBoolean;
 import tipos.TChar;
+import tipos.TCharInt;
 import tipos.TEntero;
 import tipos.TTipo;
 
@@ -47,7 +48,7 @@ public class TablaSimbolos {
 		
 		// FUNCIONES
 		ArrayList<ParametroForm> list = new ArrayList<ParametroForm>();
-		list.add(new ParametroForm("x", new TEntero(), true));
+		list.add(new ParametroForm("x", new TCharInt(), true));
 		
 		guardar_funcion_en_tabla("succ", list, new TEntero(), Mnivelact, 0, "succ");
 		guardar_funcion_en_tabla("pred", list, new TEntero(), Mnivelact, 1, "pred");
@@ -56,7 +57,7 @@ public class TablaSimbolos {
 		
 		// PROCEDIMIENTOS
 		ArrayList<ParametroForm> list2 = new ArrayList<ParametroForm>();
-		list2.add(new ParametroForm("x", new TEntero(), false));
+		list2.add(new ParametroForm("x", new TCharInt(), false));
 		
 		guardar_procedimiento_en_tabla("read", list2, Mnivelact, "read");
 		guardar_procedimiento_en_tabla("readln", list2, Mnivelact, "readln");
