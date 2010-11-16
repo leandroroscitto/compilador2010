@@ -8,6 +8,7 @@ public class TTipo {
 	public static int TPARREGLO = 4;
 	public static int TPUNIDAD = 5;
 	public static int TPVOID = 6;
+	public static int TPCHARINT = 7;
 	
 	public String nombre;
 	public int clase;
