@@ -15,11 +15,15 @@ import sintetizados.TSlistlexema;
 import sintetizados.TSesMenos;
 import sintetizados.TStiSi;
 import sintetizados.TStifvaf;
+import tablasimb.Funcion;
 import tablasimb.Procedimiento;
 import tablasimb.Simbolo;
 import tablasimb.TablaSimbolos;
 import tablasimb.Tipo;
 import tablasimb.Variable;
+import tipos.TBoolean;
+import tipos.TChar;
+import tipos.TEntero;
 import tipos.TTipo;
 import tipos.TVoid;
 
@@ -361,7 +365,7 @@ public class Parser {
 	// <variable'> |
 	// <designador de funcion'> |
 	// lambda
-	public TStipo factorP(String lexema,boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo factorP(String lexema, boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico {
 		if (TActual.tipo == Token.TCORA) {
 			variableP();
 			return;
@@ -376,41 +380,79 @@ public class Parser {
 
 	// <termino> :
 	// <factor><termino'>
-	public TStipo termino(boolean esReferencia) throws IOException, ExcepALexico, ExcepASintatico {
-		factor();
-		terminoP();
-		return;
+	public TStipo termino(boolean esReferencia) throws IOException, ExcepALexico, ExcepASintatico, ExcepASemantico {
+		TStipo retFac = factor(esReferencia);
+		return terminoP(retFac.tipo, esReferencia);
 	}
 
 	// <termino'> :
 	// <operador de multiplicacion><factor><termino'> |
 	// lambda
-	public TStipo terminoP(TTipo tipof, boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo terminoP(TTipo tipof, boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico,
+			ExcepASemantico {
 		if (TActual.tipo == Token.TOPERMULT || TActual.tipo == Token.TOPERDIV || TActual.tipo == Token.TOPER_AND) {
-			operador_de_multiplicacion();
-			factor();
-			terminoP();
-			return;
+			TSlexema retOpermult = operador_de_multiplicacion();
+			// --
+			if (esReferencia) {
+				throw new ExcepASemantico("Se esperaba una referencia a una variable.", TActual.nlinea);
+			}
+			// --
+			TStipo retFac = factor(false);
+			// --
+			if (mepa.chequear_tipo_oper(tipof, retFac.tipo, retOpermult.lexema)) {
+				String lexema = retOpermult.lexema;
+
+				if (lexema.equals("*")) {
+					mepa.Mimprimir("MULT");
+				} else if (lexema.equals("div")) {
+					// Control de divicion por cero
+					mepa.Mimprimir("DIVC");
+					// Hace la division
+					mepa.Mimprimir("DIVI");
+				} else {
+					// Es AND
+					mepa.Mimprimir("CONJ");
+				}
+			} else {
+				throw new ExcepASemantico("El operador no esta definido para los operandos suministrados.", TActual.nlinea);
+			}
+			// --
+			return terminoP(tipof, false);
 		} else {
-			return;
+			TStipo retorno = new TStipo();
+			retorno.tipo = tipof;
+			return retorno;
 		}
 	}
 
 	// <expresion simple> :
 	// <termino><expresion simple'> |
 	// <signo><termino><expresion simple'>
-	public TStipo expresion_simple(boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo expresion_simple(boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico,
+			ExcepASemantico {
 		if (TActual.tipo == Token.TIDENTIFICADOR || TActual.tipo == Token.TNUMERO || TActual.tipo == Token.TCARACTER
 				|| TActual.tipo == Token.TPARENTA || TActual.tipo == Token.TOPER_NOT) {
-			termino();
-			expresion_simpleP();
-			return;
+			TStipo retTerm = termino(esReferencia);
+			return expresion_simpleP(retTerm.tipo, esReferencia);
 		}
 		if (TActual.tipo == Token.TOPERMAS || TActual.tipo == Token.TOPERMENOS) {
-			signo();
-			termino();
-			expresion_simpleP();
-			return;
+			TSesMenos retSig = signo();
+			// --
+			if (esReferencia) {
+				throw new ExcepASemantico("Se esperaba una referencia a una variable.", TActual.nlinea);
+			}
+			// --
+			TStipo retTerm = termino(false);
+			// --
+			if (retTerm.tipo.clase == TTipo.TPENTERO) {
+				if (retSig.esMenos) {
+					mepa.Mimprimir("UMEN");
+				}
+			} else {
+				throw new ExcepASemantico("Se esperaba una expresion aritmetica luego de un signo.", TActual.nlinea);
+			}
+			// --
+			return expresion_simpleP(retTerm.tipo, false);
 		}
 
 		throw new ExcepASintatico("Expresion invalida.", TActual.nlinea, TActual);
@@ -419,37 +461,100 @@ public class Parser {
 	// <expresion simple'> :
 	// <operador de suma><termino><expresion simple'> |
 	// lambda
-	public TStipo expresion_simpleP(TTipo tipof, boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo expresion_simpleP(TTipo tipof, boolean esReferencia) throws ExcepALexico, IOException,
+			ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TOPERMAS || TActual.tipo == Token.TOPERMENOS || TActual.tipo == Token.TOPER_OR) {
-			operador_de_suma();
-			termino();
-			expresion_simpleP();
-			return;
+			TSlexema retOpsuma = operador_de_suma();
+			// --
+			if (esReferencia) {
+				throw new ExcepASemantico("Se esperaba una referencia a una variable.", TActual.nlinea);
+			}
+			// --
+			TStipo retTerm = termino(false);
+			// --
+			if (mepa.chequear_tipo_oper(tipof, retTerm.tipo, retOpsuma.lexema)) {
+				String lexema = retOpsuma.lexema;
+
+				if (lexema.equals("+")) {
+					mepa.Mimprimir("SUMA");
+				} else if (lexema.equals("-")) {
+					mepa.Mimprimir("SUST");
+				} else {
+					// Es OR
+					mepa.Mimprimir("DISJ");
+				}
+			} else {
+				throw new ExcepASemantico("El operador no esta definido para los operandos suministrados.", TActual.nlinea);
+			}
+			// --
+			return expresion_simpleP(tipof, false);
 		} else {
-			return;
+			// --
+			TStipo retorno = new TStipo();
+			retorno.tipo = tipof;
+			// --
+			return retorno;
 		}
 	}
 
 	// <expresion> :
 	// <expresion simple><expresion'>
-	public TStipo expresion(boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico {
-		expresion_simple();
-		expresionP();
-		return;
+	public TStipo expresion(boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+		TStipo retExpsimp = expresion_simple(esReferencia);
+		return expresionP(retExpsimp.tipo, esReferencia);
 	}
 
 	// <expresion'> :
 	// <operador de relacion><expresion simple> |
 	// lambda
-	public TStipo expresionP(TTipo tipof, boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo expresionP(TTipo tipof, boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico,
+			ExcepASemantico {
+		// --
+		TStipo retorno = new TStipo();
+		// --
 		if (TActual.tipo == Token.TSIMBOLO_IGUAL || TActual.tipo == Token.TSIMBOLO_DISTINTO
 				|| TActual.tipo == Token.TSIMBOLO_MAYOR || TActual.tipo == Token.TSIMBOLO_MAYORIGUAL
 				|| TActual.tipo == Token.TSIMBOLO_MENOR || TActual.tipo == Token.TSIMBOLO_MENORIGUAL) {
-			operador_de_relacion();
-			expresion_simple();
-			return;
+			TSlexema reOprel = operador_de_relacion();
+			// --
+			if (esReferencia) {
+				throw new ExcepASemantico("Se esperaba una referencia a una variable.", TActual.nlinea);
+			}
+			// --
+			TStipo retExpsimp = expresion_simple(false);
+			// --
+			if ((tipof.clase == TTipo.TPENTERO) && (retExpsimp.tipo.clase == TTipo.TPENTERO)) {
+				retorno.tipo = new TBoolean();
+
+				String lexema = reOprel.lexema;
+
+				if (lexema.equals("<")) {
+					mepa.Mimprimir("CMME");
+				} else if (lexema.equals("<=")) {
+					// Calcula el inverso y lo niega
+					mepa.Mimprimir("CMMA");
+					mepa.Mimprimir("NEGA");
+				} else if (lexema.equals(">")) {
+					mepa.Mimprimir("CMMA");
+				} else if (lexema.equals(">=")) {
+					// Calcula el inverso y lo niega
+					mepa.Mimprimir("CMME");
+					mepa.Mimprimir("NEGA");
+				} else if (lexema.equals("<>")) {
+					mepa.Mimprimir("CMDG");
+				} else {
+					// Es igual
+					mepa.Mimprimir("CMIG");
+				}
+			} else {
+				throw new ExcepASemantico("Se esperaba dos expresiones aritmeticas con el operador de relacion.",
+						TActual.nlinea);
+			}
+			// --
+			return retorno;
 		} else {
-			return;
+			retorno.tipo = tipof;
+			return retorno;
 		}
 	}
 
@@ -462,8 +567,12 @@ public class Parser {
 	// TOPER_AND
 	public TSlexema operador_de_multiplicacion() throws ExcepALexico, IOException, ExcepASintatico {
 		if (TActual.tipo == Token.TOPERMULT || TActual.tipo == Token.TOPERDIV || TActual.tipo == Token.TOPER_AND) {
+			// --
+			TSlexema retorno = new TSlexema();
+			retorno.lexema = TActual.lexema;
+			// --
 			leerToken();
-			return;
+			return retorno;
 		} else {
 			throw new ExcepASintatico("Se esperaba una operador de multiplicacion.", TActual.nlinea, TActual);
 		}
@@ -475,8 +584,12 @@ public class Parser {
 	// TOPER_OR
 	public TSlexema operador_de_suma() throws ExcepALexico, IOException, ExcepASintatico {
 		if (TActual.tipo == Token.TOPERMAS || TActual.tipo == Token.TOPERMENOS || TActual.tipo == Token.TOPER_OR) {
+			// --
+			TSlexema retorno = new TSlexema();
+			retorno.lexema = TActual.lexema;
+			// --
 			leerToken();
-			return;
+			return retorno;
 		} else {
 			throw new ExcepASintatico("Se esperaba una operador de suma.", TActual.nlinea, TActual);
 		}
@@ -493,8 +606,12 @@ public class Parser {
 		if (TActual.tipo == Token.TSIMBOLO_IGUAL || TActual.tipo == Token.TSIMBOLO_DISTINTO
 				|| TActual.tipo == Token.TSIMBOLO_MAYOR || TActual.tipo == Token.TSIMBOLO_MAYORIGUAL
 				|| TActual.tipo == Token.TSIMBOLO_MENOR || TActual.tipo == Token.TSIMBOLO_MENORIGUAL) {
+			// --
+			TSlexema retorno = new TSlexema();
+			retorno.lexema = TActual.lexema;
+			// --
 			leerToken();
-			return;
+			return retorno;
 		} else {
 			throw new ExcepASintatico("Se esperaba una operador de relacion.", TActual.nlinea, TActual);
 		}
@@ -506,19 +623,83 @@ public class Parser {
 	// <designador de funcion'> :
 	// TPARENTA <parametro actual> <siguiente parametro actual> TPARENTC |
 	// lambda
-	public TStipo designador_de_funcionP(String lexema) throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo designador_de_funcionP(String lexema) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+		// --
+		int posicion = 0;
+		boolean esReferencia;
+		Funcion fun;
+		TStipo retorno = new TStipo();
+		
+		if (TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.FUNCION }, false)) {
+			// Reserva el espacio de memoria para el retorno de la funcion
+			fun = (Funcion) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.FUNCION });
+
+			int tam;
+			if (fun.salida.clase == TTipo.TPARREGLO) {
+				tam = fun.salida.tammemoria;
+			} else {
+				tam = 1;
+			}
+
+			mepa.Mimprimir("RMEM", String.valueOf(tam));
+
+			// La cantidad de los parametros no se pasa de la que requiere la
+			// unidad.
+			if (fun.cpf > posicion) {
+				if (fun.ppf[posicion]) {
+					esReferencia = false;
+				} else {
+					esReferencia = true;
+				}
+			} else {
+				throw new ExcepASemantico("Se supero la cantidad de parametros formales.", TActual.nlinea);
+			}
+		} else {
+			throw new ExcepASemantico("Funcion no declarada.", TActual.nlinea);
+		}
+		// --
 		if (TActual.tipo == Token.TPARENTA) {
 			leerToken();
-			parametro_actual();
-			siguiente_parametro_actual();
+			TStipo retParAct = parametro_actual(esReferencia);
+			// --
+			// Chequeo de tipos
+			if (!retParAct.tipo.comparar(fun.tpf[posicion])) {
+				throw new ExcepASemantico("Los tipos no coinciden.", TActual.nlinea);
+			}
+			// --
+			siguiente_parametro_actual(false,lexema,posicion+1);
 			if (TActual.tipo == Token.TPARENTC) {
 				leerToken();
-				return;
+				//--
+				// Si es una funcion predefinida
+				if (fun.nivelL == TablaSimb.MNivelPre){
+					if (lexema.equals("succ")){
+						mepa.Mimprimir("APCT","1");
+						mepa.Mimprimir("SUMA");
+						retorno.tipo = retParAct.tipo;
+					}else if (lexema.equals("pred")){
+						mepa.Mimprimir("APCT","1");
+						mepa.Mimprimir("SUST");
+						retorno.tipo = retParAct.tipo;
+					}else if (lexema.equals("ord")){
+						retorno.tipo = new TEntero();
+					}else{
+						// Sino es CHR
+						retorno.tipo = new TChar();
+					}
+				}else{
+					retorno.tipo = fun.salida;
+					
+					mepa.Mimprimir("LLPR",fun.etiqueta);
+				}
+				//--
+				return retorno;
 			} else {
 				throw new ExcepASintatico("Se esperaba el simbolo ')'.", TActual.nlinea, TActual);
 			}
 		} else {
-			return;
+			// Nunca entra al lambda
+			return retorno;
 		}
 	}
 
@@ -526,14 +707,59 @@ public class Parser {
 	// TCOMA <parametro actual><siguiente parametro actual> |
 	// lambda
 	public TSintetizado siguiente_parametro_actual(boolean esProcedimiento, String lexema, int posicion)
-			throws ExcepALexico, IOException, ExcepASintatico {
+			throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+		// --
+		int UNIDAD;
+		boolean esReferencia;
+		TSintetizado retorno = new TSintetizado();
+		Procedimiento uni;
+
+		if (esProcedimiento) {
+			UNIDAD = Simbolo.PROCEDIMIENTO;
+		} else {
+			UNIDAD = Simbolo.FUNCION;
+		}
+
+		// Suponemos que ya chequeo que existe
+		uni = (Procedimiento) TablaSimb.obtener_de_tabla(lexema, new int[] { UNIDAD });
+
+		if (uni.cpf > posicion) {
+			if (uni.ppf[posicion]) {
+				esReferencia = false;
+			} else {
+				esReferencia = true;
+			}
+		} else {
+			throw new ExcepASemantico("Se supero la cantidad de parametros formales.", TActual.nlinea);
+		}
+		// --
 		if (TActual.tipo == Token.TCOMA) {
 			leerToken();
-			parametro_actual();
-			siguiente_parametro_actual();
-			return;
+			TStipo retParAct = parametro_actual(esReferencia);
+			// --
+			// Hace el chequeo de tipos
+			if (!retParAct.tipo.comparar(uni.tpf[posicion])) {
+				throw new ExcepASemantico("Los tipos no coinciden.", TActual.nlinea);
+			}
+			// --
+			siguiente_parametro_actual(esProcedimiento, lexema, posicion + 1);
+			return retorno;
 		} else {
-			return;
+			// --
+			if (esProcedimiento) {
+				UNIDAD = Simbolo.PROCEDIMIENTO;
+			} else {
+				UNIDAD = Simbolo.FUNCION;
+			}
+
+			// Suponemos que ya chequeo que existe
+			uni = (Procedimiento) TablaSimb.obtener_de_tabla(lexema, new int[] { UNIDAD });
+
+			if (uni.cpf != posicion + 1) {
+				throw new ExcepASemantico("Faltan parametros en pasaje de la unidad.", TActual.nlinea);
+			}
+			// --
+			return retorno;
 		}
 	}
 
@@ -544,26 +770,28 @@ public class Parser {
 	// <sentencia simple> |
 	// <sentencia estructurada> |
 	// lambda
-	public TStipo sentencia() throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo sentencia() throws Exception {
 		if (TActual.tipo == Token.TIDENTIFICADOR) {
-			sentencia_simple();
-			return;
+			return sentencia_simple();
 		}
 		if ((TActual.tipo == Token.TPALRES_BEGIN) || (TActual.tipo == Token.TPALRES_IF)
 				|| (TActual.tipo == Token.TPALRES_WHILE)) {
-			sentencia_estructurada();
-			return;
+			return sentencia_estructurada();
 		}
-		return;
+		// --
+		TStipo retorno = new TStipo();
+		retorno.tipo = new TVoid();
+		// --
+		return retorno;
 	}
 
 	// <sentencia simple> :
 	// TIDENTIFICADOR <sentencia simple'>
-	public TStipo sentencia_simple() throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo sentencia_simple() throws Exception {
 		if (TActual.tipo == Token.TIDENTIFICADOR) {
+			String identificador = TActual.lexema;
 			leerToken();
-			sentencia_simpleP();
-			return;
+			return sentencia_simpleP(identificador);
 		} else {
 			throw new ExcepASintatico("Sentencia invalida.", TActual.nlinea, TActual);
 		}
@@ -573,50 +801,205 @@ public class Parser {
 	// <sentencia de asignacion'> |
 	// <sentencia de procedimiento'> |
 	// lambda
-	public TStipo sentencia_simpleP(String lexema) throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo sentencia_simpleP(String lexema) throws Exception {
 		if ((TActual.tipo == Token.TCORA) || (TActual.tipo == Token.TASIGN)) {
-			sentencia_de_asignacionP();
-			return;
+			return sentencia_de_asignacionP(lexema);
 		}
 		if (TActual.tipo == Token.TPARENTA) {
-			sentencia_de_procedimientoP();
-			return;
+			return sentencia_de_procedimientoP(lexema);
 		}
-		// throw new
-		// ExcepASintatico("Se esperaba una sentencia de asignacion o una sentencia de procedimiento validos.",
-		// TActual.nlinea, TActual);
-		return;
+		// --
+		if (TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.PROCEDIMIENTO }, false)) {
+			Procedimiento proc = (Procedimiento) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.PROCEDIMIENTO });
+
+			if (proc.cpf == 0) {
+				// Llamamos al procedimiento
+				mepa.Mimprimir("LLPR", String.valueOf(proc.etiqueta));
+			} else {
+				throw new ExcepASemantico("Procedimiento sin parametros no declarado.", TActual.nlinea);
+			}
+		} else {
+			throw new ExcepASemantico("Procedimiento no declarado.", TActual.nlinea);
+		}
+		TStipo retorno = new TStipo();
+		retorno.tipo = new TVoid();
+		// --
+		return retorno;
 	}
 
 	// <sentencia de asignacion'> :
 	// <variable'> TASIGN <expresion> |
 	// TASIGN <expresion>
-	public TStipo sentencia_de_asignacionP(String lexema) throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo sentencia_de_asignacionP(String lexema) throws ExcepALexico, IOException, ExcepASintatico,
+			ExcepASemantico {
+		// --
+		TStipo retorno = new TStipo();
+		retorno.tipo = new TVoid();
+		// --
 		if (TActual.tipo == Token.TCORA) {
-			variableP();
-		}
-		if (TActual.tipo == Token.TASIGN) {
-			leerToken();
-			expresion();
-			return;
+			TStipo retVarp = variableP(lexema);
+
+			if (TActual.tipo == Token.TASIGN) {
+				leerToken();
+				TStipo retExp = expresion(false);
+				// --
+				if (retVarp.tipo.comparar(retExp.tipo)) {
+					if (!TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.VARIABLE }, false)) {
+						throw new ExcepASemantico("Variable no declarada.", TActual.nlinea);
+					}
+					Variable arreglo = (Variable) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.VARIABLE });
+					if (arreglo.esPorvalor) {
+						mepa.Mimprimir("ALAR", String.valueOf(arreglo.nivelL), String.valueOf(arreglo.desp));
+					} else {
+						mepa.Mimprimir("ALAI", String.valueOf(arreglo.nivelL), String.valueOf(arreglo.desp));
+					}
+				} else {
+					throw new ExcepASemantico("Tipos no compatibles", TActual.nlinea);
+				}
+				// --
+				return retorno;
+			} else {
+				throw new ExcepASintatico("Se esperaba el simbolo ':='.", TActual.nlinea, TActual);
+			}
 		} else {
-			throw new ExcepASintatico("Se esperaba el simbolo ':='.", TActual.nlinea, TActual);
+			if (TActual.tipo == Token.TASIGN) {
+				leerToken();
+				TStipo retExp = expresion(false);
+				// --
+				if (mepa.MestaEnFuncion && (mepa.MLexemaUnidad.equals(lexema))) {
+					if (!TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.FUNCION }, false)) {
+						throw new ExcepASemantico("Funcion no declarada.", TActual.nlinea);
+					}
+					Funcion fun = (Funcion) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.FUNCION });
+					if (fun.salida.comparar(retExp.tipo)) {
+						mepa.MretFuncion = true;
+						if (fun.salida.clase == TTipo.TPARREGLO) {
+							mepa.Mimprimir("POAR", String.valueOf(fun.nivelL), String.valueOf(fun.desp),
+									String.valueOf(fun.salida.tammemoria));
+						} else {
+							mepa.Mimprimir("ALVL", String.valueOf(fun.nivelL), String.valueOf(fun.desp));
+						}
+					} else {
+						throw new ExcepASemantico("Tipos no compatibles.", TActual.nlinea);
+					}
+				} else if (TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.VARIABLE }, false)) {
+					Variable var = (Variable) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.VARIABLE });
+					if (var.tipo_de_estructura.comparar(retExp.tipo)) {
+						if (var.esPorvalor) {
+							if (var.tipo_de_estructura.clase == TTipo.TPARREGLO) {
+								// Asignacion masiva de arreglo directo
+								mepa.Mimprimir("POAR", String.valueOf(var.nivelL), String.valueOf(var.desp),
+										String.valueOf(var.tipo_de_estructura.tammemoria));
+							} else {
+								// Apila el valor de la pila en la variable
+								mepa.Mimprimir("ALVL", String.valueOf(var.nivelL), String.valueOf(var.desp));
+							}
+						} else {
+							if (var.tipo_de_estructura.clase == TTipo.TPARREGLO) {
+								// Asignacion masiva de arreglo directo
+								mepa.Mimprimir("POAI", String.valueOf(var.nivelL), String.valueOf(var.desp),
+										String.valueOf(var.tipo_de_estructura.tammemoria));
+							} else {
+								// Apila el valor de la pila en la variable
+								mepa.Mimprimir("ALVI", String.valueOf(var.nivelL), String.valueOf(var.desp));
+							}
+						}
+					} else {
+						throw new ExcepASemantico("Tipo no compatible.", TActual.nlinea);
+					}
+				} else {
+					throw new ExcepASemantico("Variable no declarada.", TActual.nlinea);
+				}
+				// --
+				return retorno;
+			} else {
+				throw new ExcepASintatico("Se esperaba el simbolo ':='.", TActual.nlinea, TActual);
+			}
 		}
 	}
 
 	// <sentencia de procedimiento'> :
 	// TPARENTA <parametro actual><siguiente parametro actual> TPARENTC
-	public TStipo sentencia_de_procedimientoP(String lexema) throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo sentencia_de_procedimientoP(String lexema) throws Exception {
+		// --
+		boolean esReferencia;
+		Procedimiento proc;
+		int posicion;
+
+		TStipo retorno;
+
+		retorno = new TStipo();
+		retorno.tipo = new TVoid();
+		// --
 		if (TActual.tipo == Token.TPARENTA) {
 			leerToken();
-			parametro_actual();
-			siguiente_parametro_actual();
+			// --
+			if (TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.PROCEDIMIENTO }, false)) {
+				proc = (Procedimiento) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.PROCEDIMIENTO });
+
+				posicion = 0;
+				if (proc.cpf > posicion) {
+
+					if (proc.ppf[posicion]) {
+						esReferencia = false;
+					} else {
+						esReferencia = true;
+					}
+				} else {
+					throw new ExcepASemantico("Se supero la cantidad de parametros formales.", TActual.nlinea);
+				}
+			} else {
+				throw new ExcepASemantico("Procedimiento no declarado.", TActual.nlinea);
+			}
+			// --
+			TStipo retParact = parametro_actual(esReferencia);
+			// --
+			if (!retParact.tipo.comparar(proc.tpf[posicion])) {
+				throw new ExcepASemantico("Los tipos no coinciden.", TActual.nlinea);
+			}
+			// --
+			siguiente_parametro_actual(true, lexema, posicion + 1);
 			if (TActual.tipo == Token.TPARENTC) {
 				leerToken();
-				return;
+				// --
+				if (proc.nivelL == TablaSimb.MNivelPre) {
+					if (lexema.equals("write")) {
+						if (retParact.tipo.clase == TTipo.TPENTERO) {
+							mepa.Mimprimir("LLPR", "writeE");
+						} else {
+							mepa.Mimprimir("LLPR", "writeC");
+						}
+					} else if (lexema.equals("writeln")) {
+						if (retParact.tipo.clase == TTipo.TPENTERO) {
+							mepa.Mimprimir("LLPR", "writelnE");
+						} else {
+							mepa.Mimprimir("LLPR", "writelnC");
+						}
+					} else if (lexema.equals("read")) {
+						if (retParact.tipo.clase == TTipo.TPENTERO) {
+							mepa.Mimprimir("LLPR", "readE");
+						} else {
+							mepa.Mimprimir("LLPR", "readC");
+						}
+					} else if (lexema.equals("readln")) {
+						if (retParact.tipo.clase == TTipo.TPENTERO) {
+							mepa.Mimprimir("LLPR", "readlnE");
+						} else {
+							mepa.Mimprimir("LLPR", "readlnC");
+						}
+					} else {
+						throw new Exception("Error en la funcion sentencia de procedmiento'.");
+					}
+				} else {
+					mepa.Mimprimir("LLPR", proc.etiqueta);
+				}
+				// --
+				return retorno;
 			} else {
 				throw new ExcepASintatico("Se esperaba el simbolo ')'.", TActual.nlinea, TActual);
 			}
+		} else {
+			return retorno;
 		}
 	}
 
@@ -632,7 +1015,7 @@ public class Parser {
 	// <sentencia compuesta> |
 	// <sentencia if> |
 	// <sentencia while>
-	public TStipo sentencia_estructurada() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+	public TStipo sentencia_estructurada() throws Exception {
 		if (TActual.tipo == Token.TPALRES_BEGIN) {
 			return sentencia_compuesta();
 		}
@@ -647,7 +1030,7 @@ public class Parser {
 
 	// <sentencia compuesta> :
 	// TPALRES_BEGIN <sentencia><sentencia compuesta'> TPALRES_END
-	public TStipo sentencia_compuesta() throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo sentencia_compuesta() throws Exception {
 		// --
 		TStipo retorno = new TStipo();
 		retorno.tipo = new TVoid();
@@ -675,7 +1058,7 @@ public class Parser {
 	// <sentencia compuesta'> :
 	// TPUNTO_Y_COMA<sentencia><sentencia compuesta'> |
 	// lambda
-	public TStipo sentencia_compuestaP() throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo sentencia_compuestaP() throws Exception {
 		// --
 		TStipo retorno = new TStipo();
 		retorno.tipo = new TVoid();
@@ -692,7 +1075,7 @@ public class Parser {
 
 	// <sentencia if> :
 	// TPALRES_IF <expresion> TPALRES_THEN <sentencia> <sentencia if'>
-	public TStipo sentencia_if() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+	public TStipo sentencia_if() throws Exception {
 		if (TActual.tipo == Token.TPALRES_IF) {
 			leerToken();
 			TStipo retExpresion = expresion(false);
@@ -722,7 +1105,7 @@ public class Parser {
 	// <sentencia if'> :
 	// TPALRES_ELSE <sentencia> |
 	// lambda
-	public TStipo sentencia_ifP(String etielse, String etifinelse) throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo sentencia_ifP(String etielse, String etifinelse) throws Exception {
 		// --
 		TStipo retorno = new TStipo();
 		retorno.tipo = new TVoid();
@@ -748,7 +1131,7 @@ public class Parser {
 
 	// <sentencia while> :
 	// TPALRES_WHILE <expresion> TPALRES_DO <sentencia>
-	public TStipo sentencia_while() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+	public TStipo sentencia_while() throws Exception {
 		// --
 		String eticomwhile = mepa.MobtProxEti();
 		mepa.Mimprimir(eticomwhile, "NADA");
@@ -788,8 +1171,7 @@ public class Parser {
 	/*--------------------------------------------------------------*/
 	// <declaracion de procedimiento> :
 	// <encabezado de procedimiento><bloque>
-	public TSintetizado declaracion_de_procedimiento() throws ExcepALexico, IOException, ExcepASintatico,
-			ExcepASemantico {
+	public TSintetizado declaracion_de_procedimiento() throws Exception {
 		if (TActual.tipo == Token.TPALRES_PROCEDURE) {
 			TSlexema retEncabezado = encabezado_de_procedimiento();
 			// --
@@ -818,7 +1200,7 @@ public class Parser {
 	// <parte de declaracion de variables>
 	// <parte de declaracion de funciones y procedimientos>
 	// <parte de sentencias>
-	public TSintetizado bloque() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+	public TSintetizado bloque() throws Exception {
 		parte_de_definicion_de_constantes();
 		parte_de_definicion_de_tipos();
 		TStamreser retParDecVar = parte_de_declaracion_de_variables();
@@ -1163,8 +1545,7 @@ public class Parser {
 
 	// <parte de declaracion de funciones y procedimientos> :
 	// <siguiente declaracion de procedimiento o funcion>
-	public TSintetizado parte_de_declaracion_de_funciones_y_procedimientos() throws ExcepALexico, IOException,
-			ExcepASintatico, ExcepASemantico {
+	public TSintetizado parte_de_declaracion_de_funciones_y_procedimientos() throws Exception {
 		siguiente_declaracion_de_procedimiento_o_funcion();
 		return new TSintetizado();
 	}
@@ -1173,8 +1554,7 @@ public class Parser {
 	// <declaracion de procedimiento o funcion> TPUNTO_Y_COMA <siguiente
 	// declaracion de procedimiento o funcion> |
 	// lambda
-	public TSintetizado siguiente_declaracion_de_procedimiento_o_funcion() throws ExcepALexico, IOException,
-			ExcepASintatico, ExcepASemantico {
+	public TSintetizado siguiente_declaracion_de_procedimiento_o_funcion() throws Exception {
 		if ((TActual.tipo == Token.TPALRES_FUNCTION) || (TActual.tipo == Token.TPALRES_PROCEDURE)) {
 			// --
 			TablaSimb.crear_nivel_lexico();
@@ -1198,8 +1578,7 @@ public class Parser {
 	// <declaracion de procedimiento o funcion> :
 	// <declaracion de procedimiento> |
 	// <declaracion de funcion>
-	public TSintetizado declaracion_de_procedimiento_o_funcion() throws ExcepALexico, IOException, ExcepASintatico,
-			ExcepASemantico {
+	public TSintetizado declaracion_de_procedimiento_o_funcion() throws Exception {
 		if (TActual.tipo == Token.TPALRES_PROCEDURE) {
 			declaracion_de_procedimiento();
 			return new TSintetizado();
@@ -1213,7 +1592,7 @@ public class Parser {
 
 	// <parte de sentencias> :
 	// <sentencia compuesta>
-	public TSintetizado parte_de_sentencias() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+	public TSintetizado parte_de_sentencias() throws Exception {
 		sentencia_compuesta();
 		return new TSintetizado();
 	}
@@ -1223,7 +1602,7 @@ public class Parser {
 	/*--------------------------------------------------------------*/
 	// <declaracion de funcion> :
 	// <encabezado de funcion><bloque>
-	public TSintetizado declaracion_de_funcion() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+	public TSintetizado declaracion_de_funcion() throws Exception {
 		TSlexema retEncabezado = encabezado_de_funcion();
 		// --
 		boolean MestaFuncionAux = mepa.MestaEnFuncion;
@@ -1352,7 +1731,7 @@ public class Parser {
 	/*--------------------------------------------------------------*/
 	// <programa> :
 	// TPALRES_PROGRAM TIDENTIFICADOR TPUNTO_Y_COMA <bloque> TPUNTO
-	public TSintetizado programa() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+	public TSintetizado programa() throws Exception {
 		// =
 		TablaSimb = new TablaSimbolos();
 		TablaSimb.cargarPredefinidas();
