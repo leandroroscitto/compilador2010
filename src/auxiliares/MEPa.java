@@ -3,6 +3,8 @@ package auxiliares;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
+import tipos.TTipo;
+
 public class MEPa {
 	private PrintStream PS;
 	
@@ -30,6 +32,11 @@ public class MEPa {
 	public String MobtProxEti(){
 		EtiquetaAct++;
 		return "label"+String.valueOf(EtiquetaAct);
+	}
+	
+	public boolean chequear_tipo_oper(TTipo t1,TTipo t2,String lexema){
+		// TODO
+		return true;
 	}
 	
 	public void generarEntSal(){

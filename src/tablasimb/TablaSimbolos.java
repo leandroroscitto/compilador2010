@@ -15,11 +15,11 @@ import tipos.TTipo;
 public class TablaSimbolos {
 	Pila<Hashtable<String, Simbolo>> PTabla;
 	
-	public int Mnivelact;
+	public int Mnivelact = -1;
+	public final int MNivelPre = 0;
 	
 	public TablaSimbolos(){
 		PTabla = new Pila<Hashtable<String, Simbolo>>();
-		Mnivelact = -1;
 	}
 	
 	public void crear_nivel_lexico(){
