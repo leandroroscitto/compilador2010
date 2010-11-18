@@ -12,6 +12,13 @@ public class TArreglo extends TTipo {
 		tbase = tb;
 	}
 	
+	public TArreglo(TSubrango ti, TSimple tb){
+		super("Arreglo",TTipo.TPARREGLO,ti.tamano);
+		base = ti.base;
+		tamano = ti.tamano;
+		tbase = tb;
+	}
+	
 	public boolean esTipoSimple(){
 		return false;
 	}

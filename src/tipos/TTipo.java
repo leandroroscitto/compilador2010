@@ -28,4 +28,8 @@ public class TTipo {
 	public boolean comparar(TTipo tipo){
 		return (this.clase == tipo.clase);
 	}
+	
+	public boolean esSubrango(){
+		return (this.clase == TPSUBRANGO);
+	}
 }

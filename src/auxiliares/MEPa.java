@@ -39,6 +39,11 @@ public class MEPa {
 		return true;
 	}
 	
+	public String CharToMepa(String caracter){
+		//TODO
+		return caracter;
+	}
+	
 	public void generarEntSal(){
 		// Imprimir entero
 		Mimprimir("writeE","ENPR","1");
