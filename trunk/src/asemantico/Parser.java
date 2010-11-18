@@ -3,7 +3,6 @@ package asemantico;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import sintetizados.TSlistpact;
 import sintetizados.TStamvar;
 import sintetizados.TStiva;
 import sintetizados.TSlistpform;
@@ -15,24 +14,26 @@ import sintetizados.TSlistlexema;
 import sintetizados.TSesMenos;
 import sintetizados.TStiSi;
 import sintetizados.TStifvaf;
+import tablasimb.Constante;
 import tablasimb.Funcion;
 import tablasimb.Procedimiento;
 import tablasimb.Simbolo;
 import tablasimb.TablaSimbolos;
 import tablasimb.Tipo;
 import tablasimb.Variable;
+import tipos.TArreglo;
 import tipos.TBoolean;
 import tipos.TChar;
 import tipos.TEntero;
+import tipos.TSimple;
+import tipos.TSubrango;
 import tipos.TTipo;
 import tipos.TVoid;
 
 import alexico.Lexer;
 import alexico.Token;
-import auxiliares.ListaParametrosAct;
 import auxiliares.ListaParametrosForm;
 import auxiliares.MEPa;
-import auxiliares.ParametroAct;
 import auxiliares.ParametroForm;
 import excepciones.ExcepALexico;
 import excepciones.ExcepASemantico;
@@ -45,7 +46,7 @@ public class Parser {
 
 	private TablaSimbolos TablaSimb;
 	private MEPa mepa = new MEPa("a.out");
-
+	
 	public Parser(String fileurl) throws ExcepALexico, IOException {
 		ALexico = new Lexer(fileurl);
 		TActual = ALexico.nextToken();
@@ -61,8 +62,13 @@ public class Parser {
 	// <signo> : TOPERMAS | TOPERMENOS
 	public TSesMenos signo() throws ExcepALexico, IOException, ExcepASintatico {
 		if ((TActual.tipo == Token.TOPERMAS) || (TActual.tipo == Token.TOPERMENOS)) {
+			String oper = TActual.lexema;
 			leerToken();
-			return;
+			//--
+			TSesMenos retorno = new TSesMenos();
+			retorno.esMenos = oper.equals("-");
+			//--
+			return retorno;
 		}
 		throw new ExcepASintatico("Se esperaba un signo '+' o '-'.", TActual.nlinea, TActual);
 	}
@@ -75,17 +81,62 @@ public class Parser {
 	// TCARACTER |
 	// TIDENTIFICADOR |
 	// <signo> <constante'>
-	public TStiva constante() throws ExcepALexico, IOException, ExcepASintatico {
+	public TStiva constante() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		// Si comienza con un numero, caracter o identificador
-		if ((TActual.tipo == Token.TNUMERO) || (TActual.tipo == Token.TCARACTER) || (TActual.tipo == Token.TIDENTIFICADOR)) {
+		TStiva retorno = new TStiva();
+		if (TActual.tipo == Token.TNUMERO) {
+			int valor = Integer.parseInt(TActual.lexema);
 			leerToken();
-			return;
+			//--
+			retorno.tipo = new TEntero();
+			retorno.valor = valor;
+			//--
+			return retorno;
+		}
+		if (TActual.tipo == Token.TCARACTER) {
+			int valor = Integer.parseInt(mepa.CharToMepa(TActual.lexema));
+			leerToken();
+			//--
+			retorno.tipo = new TChar();
+			retorno.valor = valor;
+			//--
+			return retorno;
+		}
+		if (TActual.tipo == Token.TIDENTIFICADOR) {
+			String identificador = TActual.lexema;
+			leerToken();
+			//--
+			if(TablaSimb.existe_en_tabla(identificador, new int[]{Simbolo.CONSTANTE}, false)){
+				Constante id = (Constante) TablaSimb.obtener_de_tabla(identificador, new int[]{Simbolo.CONSTANTE});
+				if(id.tipo_de_estructura.clase == TTipo.TPENTERO){
+					retorno.tipo = id.tipo_de_estructura;
+					retorno.valor = id.valor;
+				}else{
+					throw new ExcepASemantico("Se esperaba un entero en el subrango.", TActual.nlinea);
+				}
+			}else{
+				throw new ExcepASemantico("Costante no declarada.", TActual.nlinea);
+			}
+			//--
+			return retorno;
 		}
 		// Si comienza con un signo
 		if (TActual.tipo == Token.TOPERMAS || TActual.tipo == Token.TOPERMENOS) {
-			signo();
-			constanteP();
-			return;
+			TSesMenos retSigno = signo();
+			TStiva retConsP = constanteP();
+			//--
+			if(retConsP.tipo.clase == TTipo.TPENTERO){
+				retorno.tipo = retConsP.tipo;
+				if(retSigno.esMenos){
+					retorno.valor = (-1)* retConsP.valor;
+				}else{
+					retorno.valor = retConsP.valor;
+				}
+			}else{
+				throw new ExcepASemantico("Se esperaba un entero luego de un signo.", TActual.nlinea);
+			}
+			//--
+			return retorno;
 		}
 		// Si no es nada de lo de arriba
 		throw new ExcepASintatico("Declaracion de constante invalida.", TActual.nlinea, TActual);
@@ -94,11 +145,36 @@ public class Parser {
 	// <constante'>:
 	// TNUMERO |
 	// TIDENTIFICADOR
-	public TStiva constanteP() throws ExcepALexico, IOException, ExcepASintatico {
-		if ((TActual.tipo == Token.TNUMERO) || (TActual.tipo == Token.TIDENTIFICADOR)) {
+
+	
+	public TStiva constanteP() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+		TStiva retorno = new TStiva();
+		if (TActual.tipo == Token.TNUMERO) {
+			int valor = Integer.parseInt(TActual.lexema);
 			leerToken();
-			return;
-		} else {
+			//--
+			retorno.tipo = new TEntero();
+			retorno.valor = valor;
+			//--
+			return retorno;
+		}else if (TActual.tipo == Token.TIDENTIFICADOR) {
+			String identificador = TActual.lexema;
+			leerToken();
+			//--
+			if(TablaSimb.existe_en_tabla(identificador, new int[]{Simbolo.CONSTANTE}, false)){
+				Constante id = (Constante) TablaSimb.obtener_de_tabla(identificador, new int[]{Simbolo.CONSTANTE});
+				if(id.tipo_de_estructura.clase == TTipo.TPENTERO){
+					retorno.tipo = id.tipo_de_estructura;
+					retorno.valor = id.valor;
+				}else{
+					throw new ExcepASemantico("Se esperaba un entero en el subrango.", TActual.nlinea);
+				}
+			}else{
+				throw new ExcepASemantico("Costante no declarada.", TActual.nlinea);
+			}
+			//--
+			return retorno;
+		}else {
 			throw new ExcepASintatico("Declaracion de constante invalida.", TActual.nlinea, TActual);
 		}
 	}
@@ -107,17 +183,53 @@ public class Parser {
 	// TNUMERO |
 	// TIDENTIFICADOR |
 	// <signo> <constante'>
-	public TStiva constante_de_subrango() throws ExcepALexico, IOException, ExcepASintatico {
+	public TStiva constante_de_subrango() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+		TStiva retorno = new TStiva();
 		// Si comienza con un numero, caracter o identificador
-		if ((TActual.tipo == Token.TNUMERO) || (TActual.tipo == Token.TIDENTIFICADOR)) {
+		if (TActual.tipo == Token.TNUMERO) {
+			int valor = Integer.parseInt(TActual.lexema);
 			leerToken();
-			return;
+			//--
+			retorno.tipo = new TEntero();
+			retorno.valor = valor;
+			//--
+			return retorno;
+		}
+		if (TActual.tipo == Token.TIDENTIFICADOR) {
+			String identificador = TActual.lexema;
+			leerToken();
+			//--
+			if(TablaSimb.existe_en_tabla(identificador, new int[]{Simbolo.CONSTANTE}, false)){
+				Constante id = (Constante) TablaSimb.obtener_de_tabla(identificador, new int[]{Simbolo.CONSTANTE});
+				if(id.tipo_de_estructura.clase == TTipo.TPENTERO){
+					retorno.tipo = id.tipo_de_estructura;
+					retorno.valor = id.valor;
+				}else{
+					throw new ExcepASemantico("Se esperaba un entero en el subrango.", TActual.nlinea);
+				}
+			}else{
+				throw new ExcepASemantico("Costante no declarada.", TActual.nlinea);
+			}
+			//--
+			return retorno;
 		}
 		// Si comienza con un signo
 		if (TActual.tipo == Token.TOPERMAS || TActual.tipo == Token.TOPERMENOS) {
-			signo();
-			constanteP();
-			return;
+			TSesMenos retSigno = signo();
+			TStiva retConsP = constanteP();
+			//--
+			if(retConsP.tipo.clase == TTipo.TPENTERO){
+				retorno.tipo = retConsP.tipo;
+				if(retSigno.esMenos){
+					retorno.valor = (-1)* retConsP.valor;
+				}else{
+					retorno.valor = retConsP.valor;
+				}
+			}else{
+				throw new ExcepASemantico("Se esperaba un entero luego de un signo.", TActual.nlinea);
+			}
+			//--
+			return retorno;
 		}
 		// Si no es nada de lo de arriba
 		throw new ExcepASintatico("Declaracion de constante invalida.", TActual.nlinea, TActual);
@@ -125,13 +237,27 @@ public class Parser {
 
 	// <defincion de constante> :
 	// TIDENTIFICADOR TSIMBOLO_IGUAL <constante>
-	public TSintetizado definicion_de_constante() throws ExcepALexico, IOException, ExcepASintatico {
+	public TSintetizado definicion_de_constante() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TIDENTIFICADOR) {
+			String identificador = TActual.lexema;
 			leerToken();
+			//--
+			if(mepa.MestaEnFuncion){
+				if(identificador.equals(mepa.MLexemaUnidad)){
+					throw new ExcepASemantico("Se esta redefiniendo la funcion.", TActual.nlinea);
+				}
+			}
+			if(TablaSimb.existe_en_tabla(identificador, new int[]{Simbolo.CONSTANTE}, true)){
+				throw new ExcepASemantico("Identificador ya utilizado.", TActual.nlinea);
+			}
+			//--
 			if (TActual.tipo == Token.TSIMBOLO_IGUAL) {
 				leerToken();
-				constante();
-				return;
+				TStiva retConstante = constante();
+				//--
+				TablaSimb.guardar_constante_en_tabla(identificador, retConstante.tipo, retConstante.valor);
+				//--
+				return new TSintetizado();
 			} else {
 				throw new ExcepASintatico("Se esperaba el simbolo '='.", TActual.nlinea, TActual);
 			}
@@ -146,28 +272,51 @@ public class Parser {
 	// <tipo> :
 	// <tipo simple> |
 	// <tipo arreglo>
-	public TStiSi tipo() throws ExcepALexico, IOException, ExcepASintatico {
+	public TStiSi tipo() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+		TStiSi retorno = new TStiSi();
 		if (TActual.tipo == Token.TIDENTIFICADOR || TActual.tipo == Token.TNUMERO || TActual.tipo == Token.TCARACTER || TActual.tipo == Token.TOPERMAS
 				|| TActual.tipo == Token.TOPERMENOS) {
-			tipo_simple();
-			return;
+			TStipo retTipoSimp = tipo_simple();
+			//--
+			retorno.tipo = retTipoSimp.tipo;
+			retorno.esSimple = true;
+			//--
+			return retorno;
 		}
 		if (TActual.tipo == Token.TPALRES_ARRAY) {
-			tipo_arreglo();
-			return;
+			TStipo retTipoarr = tipo_arreglo();
+			//--
+			retorno.tipo = retTipoarr.tipo;
+			retorno.esSimple = false;
+			//--
+			return retorno;
 		}
 		throw new ExcepASintatico("Se esperaba un tipo.", TActual.nlinea, TActual);
 	}
 
 	// <definicion de tipo> :
 	// TIDENTIFICADOR TSIMBOLO_IGUAL <tipo>
-	public TSintetizado definicion_de_tipo() throws ExcepALexico, IOException, ExcepASintatico {
+	public TSintetizado definicion_de_tipo() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TIDENTIFICADOR) {
+			String identificador = TActual.lexema;
 			leerToken();
+			//--
+			if(mepa.MestaEnFuncion){
+				if(identificador.equals(mepa.MLexemaUnidad)){
+					throw new ExcepASemantico("Se esta redefiniendo la funcion.", TActual.nlinea);
+				}
+			}
+			if(TablaSimb.existe_en_tabla(identificador, new int[]{Simbolo.TIPO}, true)){
+				throw new ExcepASemantico("Identificador ya utilizado.", TActual.nlinea);
+			}
+			//--
 			if (TActual.tipo == Token.TSIMBOLO_IGUAL) {
 				leerToken();
-				tipo();
-				return;
+				TStiSi retTipo = tipo();
+				//--
+				TablaSimb.guardar_tipo_en_tabla(identificador, retTipo.tipo);
+				//--
+				return new TSintetizado();
 			} else {
 				throw new ExcepASintatico("Se esperaba el simbolo '='.", TActual.nlinea, TActual);
 			}
@@ -181,26 +330,72 @@ public class Parser {
 	// TNUMERO TDOBLEPUNTO <constante de subrango> |
 	// TOPERMAS <tipo simple de signo>
 	// TOPERMENOS <tipo simple de signo>
-	public TStipo tipo_simple() throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo tipo_simple() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TIDENTIFICADOR) {
+			String identificador = TActual.lexema;
 			leerToken();
-			tipo_simpleP();
-			return;
+			TStifvaf retTipoSimpP = tipo_simpleP();
+			//--
+			TStipo retorno = new TStipo();
+			if(retTipoSimpP.tipof == null){
+				if(TablaSimb.existe_en_tabla(identificador, new int[]{Simbolo.TIPO}, false)){
+					Tipo id = (Tipo) TablaSimb.obtener_de_tabla(identificador, new int[]{Simbolo.TIPO});
+					if(id.tipo_de_estructura.clase != TTipo.TPARREGLO){
+						retorno.tipo = id.tipo_de_estructura;
+					}else{
+						throw new ExcepASemantico("El tipo simple no puede ser arreglo", TActual.nlinea);
+					}
+				}else{
+					throw new ExcepASemantico("Tipo no declarado", TActual.nlinea);
+				}
+			}else{
+				if(TablaSimb.existe_en_tabla(identificador, new int[]{Simbolo.CONSTANTE}, false)){
+					Constante id = (Constante) TablaSimb.obtener_de_tabla(identificador, new int[]{Simbolo.CONSTANTE});
+					//Controla que las dos constantes sean del mismo tipo, Entero (Tipo simple ya es entero, porque es constante de subrango).
+					if(id.tipo_de_estructura.clase == TTipo.TPENTERO){
+						//Controla que el valor de la primera constante sea menor o igual que el de la segunda.
+						if(id.valor<=retTipoSimpP.valorf){
+							retorno.tipo = new TSubrango(id.valor, retTipoSimpP.valorf-id.valor);
+						}else{
+							throw new ExcepASemantico("El valor del primer elemento del subrango tiene que ser menor igual que el del segundo.", TActual.nlinea);
+						}
+					}else{
+						throw new ExcepASemantico("Los dos elementos del subrango deben ser enteros.", TActual.nlinea);
+					}
+				}else{
+					throw new ExcepASemantico("Constante no declarada.", TActual.nlinea);
+				}
+			}
+			//--
+			return retorno;
 		}
 		if (TActual.tipo == Token.TNUMERO) {
+			int valor = Integer.parseInt(TActual.lexema);
 			leerToken();
 			if (TActual.tipo == Token.TDOBLEPUNTO) {
 				leerToken();
-				constante_de_subrango();
-				return;
+				TStiva retConstSubr = constante_de_subrango();
+				//--
+				//Controla que la primera variable sea menor que la segunda.
+				TStipo retorno = new TStipo();
+				if(valor <= retConstSubr.valor){
+					retorno.tipo = new TSubrango(valor, retConstSubr.valor-valor);
+				}else{
+					throw new ExcepASemantico("El valor del primer elemento del subrango tiene que ser menor igual que el del segundo.", TActual.nlinea);
+				}
+				//--
+				return retorno;
 			} else {
 				throw new ExcepASintatico("Se esperaba el simbolo '..'.", TActual.nlinea, TActual);
 			}
 		}
 		if (TActual.tipo == Token.TOPERMAS || TActual.tipo == Token.TOPERMENOS) {
+			String oper = TActual.lexema;
 			leerToken();
-			tipo_simple_de_signo();
-			return;
+			//--
+			boolean esMenos = oper.equals("-");
+			//--
+			return tipo_simple_de_signo(esMenos);
 		}
 		throw new ExcepASintatico("Se esperaba un tipo.", TActual.nlinea, TActual);
 	}
@@ -208,13 +403,61 @@ public class Parser {
 	// <tipo simple de signo>:
 	// TNUMERO TDOBLEPUNTO <constante de subrango> |
 	// TIDENTIFICADOR TDOBLEPUNTO <constante de subrango> |
-	public TStipo tipo_simple_de_signo(boolean esMenos) throws ExcepALexico, IOException, ExcepASintatico {
-		if (TActual.tipo == Token.TNUMERO || TActual.tipo == Token.TIDENTIFICADOR) {
+	public TStipo tipo_simple_de_signo(boolean esMenos) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+		if (TActual.tipo == Token.TIDENTIFICADOR) {
+			String identificador = TActual.lexema;
 			leerToken();
 			if (TActual.tipo == Token.TDOBLEPUNTO) {
 				leerToken();
-				constante_de_subrango();
-				return;
+				TStiva retConstSub = constante_de_subrango();
+				//--
+				TStipo retorno = new TStipo();
+				if(TablaSimb.existe_en_tabla(identificador, new int[]{Simbolo.CONSTANTE}, false)){
+					Constante id = (Constante) TablaSimb.obtener_de_tabla(identificador, new int[]{Simbolo.CONSTANTE});
+					//controla que las dos constantes sean del mismo tipo, Entero. (Constante de subrango ya lo es)
+					if(id.tipo_de_estructura.clase == TTipo.TPENTERO){
+						int valor;
+						if(esMenos){
+							valor = (-1)*id.valor;
+						}else{
+							valor = id.valor;
+						}
+						//controla que el valor de la primera constante sea menor o igual que el de la segunda.
+						if(valor <= retConstSub.valor){
+							retorno.tipo = new TSubrango(valor, retConstSub.valor-valor);
+						}else{
+							throw new ExcepASemantico("El primer elemento del subrango debe ser menor o igual al segundo", TActual.nlinea);
+						}
+					}else{
+						throw new ExcepASemantico("El valor del subrango debe ser un entero.", TActual.nlinea);
+					}
+				}else{
+					throw new ExcepASemantico("Constante no declarada.", TActual.nlinea);
+				}
+				//--
+				return retorno;
+			} else {
+				throw new ExcepASintatico("Se esperaba el simbolo '..'.", TActual.nlinea, TActual);
+			}
+		}else if (TActual.tipo == Token.TNUMERO) {
+			int valor = Integer.parseInt(TActual.lexema);
+			leerToken();
+			if (TActual.tipo == Token.TDOBLEPUNTO) {
+				leerToken();
+				TStiva retConstSub = constante_de_subrango();
+				//--
+				if(esMenos){
+					valor = (-1)*valor;
+				}
+				// Controla que la primera constante sea menor o igual que la segunda.
+				TStipo retorno = new TStipo();
+				if(valor<=retConstSub.valor){
+					retorno.tipo = new TSubrango(valor, retConstSub.valor-valor);
+				}else{
+					throw new ExcepASemantico("El primer elemento del subrango debe ser menor o igual al segundo", TActual.nlinea);
+				}
+				//--
+				return retorno;
 			} else {
 				throw new ExcepASintatico("Se esperaba el simbolo '..'.", TActual.nlinea, TActual);
 			}
@@ -226,30 +469,49 @@ public class Parser {
 	// <tipo simple'> :
 	// TDOBLEPUNT <constante de subrango> |
 	// lambda
-	public TStifvaf tipo_simpleP() throws ExcepALexico, IOException, ExcepASintatico {
+	public TStifvaf tipo_simpleP() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+		TStifvaf retorno = new TStifvaf();
 		if (TActual.tipo == Token.TDOBLEPUNTO) {
 			leerToken();
-			constante_de_subrango();
-			return;
+			TStiva retConstSubr = constante_de_subrango();
+			//--
+			retorno.tipof = retConstSubr.tipo;
+			retorno.valorf = retConstSubr.valor;
+			//--
+			return retorno;
 		} else {
-			return;
+			//--
+			retorno.tipof = null;
+			retorno.valorf = 0;
+			//--
+			return retorno;
 		}
 	}
 
 	// <tipo arreglo> :
 	// TPALRES_ARRAY TCORA <tipo simple> TCORC TPALRES_OF <tipo simple>
-	public TStipo tipo_arreglo() throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo tipo_arreglo() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TPALRES_ARRAY) {
 			leerToken();
 			if (TActual.tipo == Token.TCORA) {
 				leerToken();
-				tipo_simple();
+				TStipo retTipoSimp1 = tipo_simple();
+				//--
+				if(!retTipoSimp1.tipo.esSubrango()){
+					throw new ExcepASemantico("El indice del arreglo debe ser un subrango de enteros",TActual.nlinea);
+				}
+				//--
 				if (TActual.tipo == Token.TCORC) {
 					leerToken();
 					if (TActual.tipo == Token.TPALRES_OF) {
 						leerToken();
-						tipo_simple();
-						return;
+						TStipo retTipoSimp2 = tipo_simple();
+						//--
+						TStipo retorno = new TStipo();
+						
+						retorno.tipo = new TArreglo((TSubrango)retTipoSimp1.tipo,(TSimple)retTipoSimp2.tipo);
+						//--
+						return retorno;
 					} else {
 						throw new ExcepASintatico("Se esperaba la palabra reservada 'of'.", TActual.nlinea, TActual);
 					}
@@ -269,14 +531,47 @@ public class Parser {
 	/*--------------------------------------------------------------*/
 	// <declaracion de variable> :
 	// TIDENTIFICADOR <siguiente identificador> TDOSPUNTOS <tipo>
-	public TStamvar declaracion_de_variable() throws ExcepASintatico, ExcepALexico, IOException {
+	public TStamvar declaracion_de_variable() throws ExcepASintatico, ExcepALexico, IOException, ExcepASemantico {
 		if (TActual.tipo == Token.TIDENTIFICADOR) {
+			String identificador = TActual.lexema;
 			leerToken();
-			siguiente_identificador();
+			//--
+			if(mepa.MestaEnFuncion){
+				if(identificador.equals(mepa.MLexemaUnidad)){
+					throw new ExcepASemantico("Se intento redefinir la funcion.", TActual.nlinea);
+				}
+			}
+			ArrayList<String> lista = new ArrayList<String>();
+			if(TablaSimb.existe_en_tabla(identificador, new int[]{Simbolo.VARIABLE}, true)){
+				throw new ExcepASemantico("Doble declaracion de variable", TActual.nlinea);
+			}else{
+				lista.add(identificador);
+			}
+			//--
+			TSlistlexema retSigId = siguiente_identificador(lista);
 			if (TActual.tipo == Token.TDOSPUNTOS) {
 				leerToken();
-				tipo();
-				return;
+				TStiSi retTipo = tipo();
+				//--
+				int tamano;
+				int mtamvar;
+				if(retTipo.tipo.esTipoSimple()){
+					tamano = 1;
+				}else{
+					//es un arreglo.
+					tamano = retTipo.tipo.tammemoria;
+				}
+				mtamvar = tamano*retSigId.lista.size();
+				
+				int indice = 0;
+				for(String lexema:retSigId.lista){
+					TablaSimb.guardar_variable_en_tabla(lexema, retTipo.tipo, TablaSimb.Mnivelact, mepa.MposVar+(indice*tamano), true);
+					indice++;
+				}
+				TStamvar retorno = new TStamvar();
+				retorno.Mtam_var = mtamvar;
+				//--
+				return retorno;
 			} else {
 				throw new ExcepASintatico("Se esperaba el simbolo ':'.", TActual.nlinea, TActual);
 			}
@@ -288,36 +583,79 @@ public class Parser {
 	// <siguiente identificador> :
 	// TCOMA TIDENTIFICADOR <siguiente identificador> |
 	// lambda
-	public TSlistlexema siguiente_identificador(ArrayList<String> lista) throws ExcepALexico, IOException, ExcepASintatico {
+	public TSlistlexema siguiente_identificador(ArrayList<String> lista) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TCOMA) {
 			leerToken();
 			if (TActual.tipo == Token.TIDENTIFICADOR) {
+				String identificador = TActual.lexema;
 				leerToken();
-				siguiente_identificador();
-				return;
+				//--
+				if(mepa.MestaEnFuncion){
+					if(identificador.equals(mepa.MLexemaUnidad)){
+						throw new ExcepASemantico("Se intento redefinir la funcion.", TActual.nlinea);
+					}
+				}
+				if(TablaSimb.existe_en_tabla(identificador, new int[]{Simbolo.VARIABLE}, true)){
+					throw new ExcepASemantico("Doble declaracion de variable", TActual.nlinea);
+				}else{
+					if(lista.contains(identificador)){
+						throw new ExcepASemantico("Identificador repetido.", TActual.nlinea);
+					}else{
+						lista.add(identificador);
+					}
+				}
+				//--
+				return siguiente_identificador(lista);
 			} else {
 				throw new ExcepASintatico("Se esperaba un identificador.", TActual.nlinea, TActual);
 			}
 		} else {
-			return;
+			TSlistlexema retorno = new TSlistlexema();
+			retorno.lista = lista;
+			return retorno;
 		}
 	}
 
 	// <variable'> :
 	// TCORA <expresion> TCORC |
 	// lambda
-	public TStipo variableP(String lexema) throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo variableP(String lexema) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+		TStipo retorno = new TStipo();
 		if (TActual.tipo == Token.TCORA) {
 			leerToken();
-			expresion();
+			TStipo retExp = expresion(false);
 			if (TActual.tipo == Token.TCORC) {
 				leerToken();
-				return;
+				//--
+				if(TablaSimb.existe_en_tabla(lexema, new int[]{Simbolo.VARIABLE}, false)){
+					Variable var = (Variable)TablaSimb.obtener_de_tabla(lexema,new int[]{Simbolo.VARIABLE});
+					if(var.tipo_de_estructura.clase == TTipo.TPARREGLO){
+						TArreglo arreglo = (TArreglo)var.tipo_de_estructura;
+						if(retExp.tipo.clase == TTipo.TPENTERO){
+							//control fuera de rango
+							mepa.Mimprimir("CONT",String.valueOf(arreglo.base),String.valueOf(arreglo.base+arreglo.tamano));
+							//normaliza el indice del arreglo.
+							mepa.Mimprimir("APCT",String.valueOf(arreglo.base));
+							mepa.Mimprimir("SUST");
+							
+							retorno.tipo = arreglo.tbase; 
+						}else{
+							throw new ExcepASemantico("Se esperaba un entero en la expresion.", TActual.nlinea);
+						}
+					}else{
+						throw new ExcepASemantico("Se esperaba un arreglo.", TActual.nlinea);
+					}
+				}else{
+					throw new ExcepASemantico("Variable no declarada.", TActual.nlinea);
+				}
+				//--
+				return retorno;
 			} else {
 				throw new ExcepASintatico("Se esperaba el simbolo ']'.", TActual.nlinea, TActual);
 			}
 		} else {
-			return;
+			//nunca deberia entrar a este caso.
+			return retorno;
 		}
 	}
 
@@ -330,30 +668,76 @@ public class Parser {
 	// TCARACTER |
 	// TPARENTA <expresion> TPARENTC |
 	// TOPER_NOT <factor>
-	public TStipo factor(boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo factor(boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TIDENTIFICADOR) {
+			String identificador = TActual.lexema; 
 			leerToken();
-			factorP();
-			return;
+			//--
+			if(!TablaSimb.existe_en_tabla(identificador, new int[]{Simbolo.FUNCION, Simbolo.CONSTANTE, Simbolo.VARIABLE}, false)){
+				throw new ExcepASemantico("Identificador no declarado.", TActual.nlinea);
+			}
+			//--
+			return factorP(identificador,esReferencia);
 		}
-		if (TActual.tipo == Token.TNUMERO || TActual.tipo == Token.TCARACTER) {
+		if (TActual.tipo == Token.TNUMERO){
+			String numero = TActual.lexema; 
 			leerToken();
-			return;
+			//--
+			if(esReferencia){
+				throw new ExcepASemantico("Se esperaba una referencia a una variable.", TActual.nlinea);
+			}
+			//apila la constante numero.
+			mepa.Mimprimir("APTC",numero);
+			TStipo retorno = new TStipo();
+
+			retorno.tipo = new TEntero();
+			//--
+			return retorno;
+		}
+		if (TActual.tipo == Token.TCARACTER){
+			String caracter = TActual.lexema; 
+			leerToken();
+			//--
+			if(esReferencia){
+				throw new ExcepASemantico("Se esperaba una referencia a una variable.", TActual.nlinea);
+			}
+			//apila la constante caracter.
+			mepa.Mimprimir("APTC",mepa.CharToMepa(caracter));
+			TStipo retorno = new TStipo();
+
+			retorno.tipo = new TChar();
+			//--
+			return retorno;			
 		}
 		if (TActual.tipo == Token.TPARENTA) {
 			leerToken();
-			expresion();
+			TStipo retorno = expresion(esReferencia);
 			if (TActual.tipo == Token.TPARENTC) {
 				leerToken();
-				return;
+				return retorno;
 			} else {
 				throw new ExcepASintatico("Se esperaba el simbolo ')'.", TActual.nlinea, TActual);
 			}
 		}
 		if (TActual.tipo == Token.TOPER_NOT) {
 			leerToken();
-			factor();
-			return;
+			//--
+			if(esReferencia){
+				throw new ExcepASemantico("Se esperaba una referencia a una variable.", TActual.nlinea);
+			}
+			//--
+			TStipo retfactor = factor(false);
+			//--
+			if(retfactor.tipo.clase == TTipo.TPBOOLEAN){
+				//apila el negativo del tope de la pila.
+				mepa.Mimprimir("NEGA");
+			}else{
+				throw new ExcepASemantico("Se esperaba un tipo booleano", TActual.nlinea);
+			}
+			//--
+			TStipo retorno = new TStipo();
+			retorno.tipo = new TBoolean();
+			return retorno;
 		}
 
 		throw new ExcepASintatico("Factor invalido.", TActual.nlinea, TActual);
@@ -363,17 +747,114 @@ public class Parser {
 	// <variable'> |
 	// <designador de funcion'> |
 	// lambda
-	public TStipo factorP(String lexema, boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico {
+	public TStipo factorP(String lexema, boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TCORA) {
-			variableP();
-			return;
+			TStipo retVarP = variableP(lexema);
+			//--
+			if(!TablaSimb.existe_en_tabla(lexema, new int[]{Simbolo.VARIABLE}, false)){
+				throw new ExcepASemantico("Variable no declarada.", TActual.nlinea);
+			}
+			Variable arreglo = (Variable) TablaSimb.obtener_de_tabla(lexema, new int[]{Simbolo.VARIABLE});
+			if(esReferencia){
+				//se pasa por referencia
+				if(arreglo.esPorvalor){
+					//y vino por valor
+					mepa.Mimprimir("APDC",String.valueOf(arreglo.nivelL),String.valueOf(arreglo.desp));
+					//imprimir(APDR,arreglo.nivelL,arreglo.desp);
+					//imprimir(SUMA);
+				}else{
+					//o vino por referencia
+					//se apila la direccion y se le apila el offset
+					mepa.Mimprimir("APVL",String.valueOf(arreglo.nivelL),String.valueOf(arreglo.desp));
+					mepa.Mimprimir("SUMA");
+				}
+			}else{
+				//se pasa por valor
+				if(arreglo.esPorvalor){
+					//y viene por valor
+					mepa.Mimprimir("APAR",String.valueOf(arreglo.nivelL),String.valueOf(arreglo.desp));
+				}else{
+					//o vino por referencia.
+					mepa.Mimprimir("APAI",String.valueOf(arreglo.nivelL),String.valueOf(arreglo.desp));
+				}
+			}
+			//--
+			return retVarP;
 		}
 		if (TActual.tipo == Token.TPARENTA) {
-			designador_de_funcionP();
-			return;
+			//--
+			if(esReferencia){
+				throw new ExcepASemantico("Se esperaba una variable por referencia.", TActual.nlinea);
+			}
+			//--
+			return designador_de_funcionP(lexema);
 		}
 		// En el caso de lambda
-		return;
+		//--
+		TTipo tipo;
+		if(TablaSimb.existe_en_tabla(lexema, new int[]{Simbolo.VARIABLE, Simbolo.CONSTANTE, Simbolo.FUNCION}, false)){
+			Simbolo id = TablaSimb.obtener_de_tabla(lexema, new int[]{Simbolo.VARIABLE, Simbolo.CONSTANTE, Simbolo.FUNCION});
+			if(id.tipo_de_simbolo == Simbolo.FUNCION){
+				if(esReferencia){
+					throw new ExcepASemantico("Se esperaba una variable por referencia.", TActual.nlinea);
+				}
+				Funcion fun = (Funcion) id;
+				tipo = fun.salida;
+				//reserva el espacio en la memoria para el retorno de la funcion.
+				mepa.Mimprimir("RMEM",String.valueOf(tipo.tammemoria));
+				//llama a la funcion.
+				mepa.Mimprimir("LLPR",fun.etiqueta);
+			}else if(id.tipo_de_simbolo == Simbolo.CONSTANTE){
+				if(esReferencia){
+					throw new ExcepASemantico("Se esperaba una variable por referencia.", TActual.nlinea);
+				}
+				Constante cons = (Constante) id;
+				tipo = cons.tipo_de_estructura;
+				//apila la constante.
+				mepa.Mimprimir("APCT",String.valueOf(cons.valor));
+			}else{
+				//si es variable.
+				Variable var = (Variable) id;
+				tipo = var.tipo_de_estructura;
+				//se esta pasando por referencia.
+				if(esReferencia){
+					//y nos vino por valor.
+					if(var.esPorvalor){
+						//apila la direccion de la variable (para arreglos es lo mismo).
+						mepa.Mimprimir("APDR",String.valueOf(var.nivelL),String.valueOf(var.desp));
+					}else{
+						//vino por referencia.
+						//apilamos directamente el valor (es la direccion).
+						mepa.Mimprimir("APVL",String.valueOf(var.nivelL),String.valueOf(var.desp));
+					}
+				}else{
+					//y nos vino por valor.
+					if(var.esPorvalor){
+						if(var.tipo_de_estructura.clase == TTipo.TPARREGLO){
+							//es un arreglo por valor.
+							mepa.Mimprimir("PUAR",String.valueOf(var.nivelL),String.valueOf(var.desp),String.valueOf(var.tipo_de_estructura.tammemoria));
+						}else{
+							//es una variable por valor.
+							mepa.Mimprimir("APVL",String.valueOf(var.nivelL),String.valueOf(var.desp));
+						}
+					}else{
+						if(var.tipo_de_estructura.clase == TTipo.TPARREGLO){
+							//es un arreglo por referencia.
+							mepa.Mimprimir("PUAI",String.valueOf(var.nivelL),String.valueOf(var.desp),String.valueOf(var.tipo_de_estructura.tammemoria));
+						}else{
+							//es una variable por referencia.
+							mepa.Mimprimir("APVI",String.valueOf(var.nivelL),String.valueOf(var.desp));
+						}
+					}
+				}
+			}
+		}else{
+			throw new ExcepASemantico("Identificador no declarada.", TActual.nlinea);
+		}
+		TStipo retorno = new TStipo();
+		retorno.tipo = tipo;
+		//--
+		return retorno;
 	}
 
 	// <termino> :
@@ -1417,7 +1898,7 @@ public class Parser {
 	// TPALRES_CONST <definicion de constante> TPUNTO_Y_COMA <siguiente
 	// definicion de constante> |
 	// lambda
-	public TSintetizado parte_de_definicion_de_constantes() throws ExcepALexico, IOException, ExcepASintatico {
+	public TSintetizado parte_de_definicion_de_constantes() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TPALRES_CONST) {
 			leerToken();
 			definicion_de_constante();
@@ -1437,7 +1918,7 @@ public class Parser {
 	// <defincion de constante> TPUNTO_Y_COMA <siguiente definicion de
 	// constante> |
 	// lambda
-	public TSintetizado siguiente_definicion_de_constante() throws ExcepASintatico, ExcepALexico, IOException {
+	public TSintetizado siguiente_definicion_de_constante() throws ExcepASintatico, ExcepALexico, IOException, ExcepASemantico {
 		if (TActual.tipo == Token.TIDENTIFICADOR) {
 			definicion_de_constante();
 			if (TActual.tipo == Token.TPUNTO_Y_COMA) {
@@ -1456,7 +1937,7 @@ public class Parser {
 	// TPALRES_TYPE <definicion de tipo> TPUNTO_Y_COMA <siguiente definicion de
 	// tipo> |
 	// lambda
-	public TSintetizado parte_de_definicion_de_tipos() throws ExcepALexico, IOException, ExcepASintatico {
+	public TSintetizado parte_de_definicion_de_tipos() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TPALRES_TYPE) {
 			leerToken();
 			definicion_de_tipo();
@@ -1475,7 +1956,7 @@ public class Parser {
 	// <siguiente definicion de tipo> :
 	// <defincion de tipo> TPUNTO_Y_COMA <siguiente definicion de tipo> |
 	// lambda
-	public TSintetizado siguiente_definicion_de_tipo() throws ExcepASintatico, ExcepALexico, IOException {
+	public TSintetizado siguiente_definicion_de_tipo() throws ExcepASintatico, ExcepALexico, IOException, ExcepASemantico {
 		if (TActual.tipo == Token.TIDENTIFICADOR) {
 			definicion_de_tipo();
 			if (TActual.tipo == Token.TPUNTO_Y_COMA) {
@@ -1495,7 +1976,7 @@ public class Parser {
 	// TPALRES_VAR <declaracion de variable> TPUNTO_Y_COMA <siguiente
 	// declaracion de variable> |
 	// lambda
-	public TStamreser parte_de_declaracion_de_variables() throws ExcepALexico, IOException, ExcepASintatico {
+	public TStamreser parte_de_declaracion_de_variables() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		// --
 		mepa.MposVar = 0;
 		TStamreser tamreser = new TStamreser();
@@ -1527,7 +2008,7 @@ public class Parser {
 	// <declaracion de variable> TPUNTO_Y_COMA <siguiente declaracion de
 	// variable> |
 	// lambda
-	public TSintetizado siguiente_declaracion_de_variable() throws ExcepASintatico, ExcepALexico, IOException {
+	public TSintetizado siguiente_declaracion_de_variable() throws ExcepASintatico, ExcepALexico, IOException, ExcepASemantico {
 		if (TActual.tipo == Token.TIDENTIFICADOR) {
 			TStamvar retDeclaracion = declaracion_de_variable();
 			// --
