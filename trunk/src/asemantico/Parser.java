@@ -77,8 +77,7 @@ public class Parser {
 	// <signo> <constante'>
 	public TStiva constante() throws ExcepALexico, IOException, ExcepASintatico {
 		// Si comienza con un numero, caracter o identificador
-		if ((TActual.tipo == Token.TNUMERO) || (TActual.tipo == Token.TCARACTER)
-				|| (TActual.tipo == Token.TIDENTIFICADOR)) {
+		if ((TActual.tipo == Token.TNUMERO) || (TActual.tipo == Token.TCARACTER) || (TActual.tipo == Token.TIDENTIFICADOR)) {
 			leerToken();
 			return;
 		}
@@ -148,8 +147,8 @@ public class Parser {
 	// <tipo simple> |
 	// <tipo arreglo>
 	public TStiSi tipo() throws ExcepALexico, IOException, ExcepASintatico {
-		if (TActual.tipo == Token.TIDENTIFICADOR || TActual.tipo == Token.TNUMERO || TActual.tipo == Token.TCARACTER
-				|| TActual.tipo == Token.TOPERMAS || TActual.tipo == Token.TOPERMENOS) {
+		if (TActual.tipo == Token.TIDENTIFICADOR || TActual.tipo == Token.TNUMERO || TActual.tipo == Token.TCARACTER || TActual.tipo == Token.TOPERMAS
+				|| TActual.tipo == Token.TOPERMENOS) {
 			tipo_simple();
 			return;
 		}
@@ -289,8 +288,7 @@ public class Parser {
 	// <siguiente identificador> :
 	// TCOMA TIDENTIFICADOR <siguiente identificador> |
 	// lambda
-	public TSlistlexema siguiente_identificador(ArrayList<String> lista) throws ExcepALexico, IOException,
-			ExcepASintatico {
+	public TSlistlexema siguiente_identificador(ArrayList<String> lista) throws ExcepALexico, IOException, ExcepASintatico {
 		if (TActual.tipo == Token.TCOMA) {
 			leerToken();
 			if (TActual.tipo == Token.TIDENTIFICADOR) {
@@ -388,8 +386,7 @@ public class Parser {
 	// <termino'> :
 	// <operador de multiplicacion><factor><termino'> |
 	// lambda
-	public TStipo terminoP(TTipo tipof, boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico,
-			ExcepASemantico {
+	public TStipo terminoP(TTipo tipof, boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TOPERMULT || TActual.tipo == Token.TOPERDIV || TActual.tipo == Token.TOPER_AND) {
 			TSlexema retOpermult = operador_de_multiplicacion();
 			// --
@@ -428,10 +425,9 @@ public class Parser {
 	// <expresion simple> :
 	// <termino><expresion simple'> |
 	// <signo><termino><expresion simple'>
-	public TStipo expresion_simple(boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico,
-			ExcepASemantico {
-		if (TActual.tipo == Token.TIDENTIFICADOR || TActual.tipo == Token.TNUMERO || TActual.tipo == Token.TCARACTER
-				|| TActual.tipo == Token.TPARENTA || TActual.tipo == Token.TOPER_NOT) {
+	public TStipo expresion_simple(boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+		if (TActual.tipo == Token.TIDENTIFICADOR || TActual.tipo == Token.TNUMERO || TActual.tipo == Token.TCARACTER || TActual.tipo == Token.TPARENTA
+				|| TActual.tipo == Token.TOPER_NOT) {
 			TStipo retTerm = termino(esReferencia);
 			return expresion_simpleP(retTerm.tipo, esReferencia);
 		}
@@ -446,6 +442,7 @@ public class Parser {
 			// --
 			if (retTerm.tipo.clase == TTipo.TPENTERO) {
 				if (retSig.esMenos) {
+					// Invierte el signo
 					mepa.Mimprimir("UMEN");
 				}
 			} else {
@@ -461,8 +458,7 @@ public class Parser {
 	// <expresion simple'> :
 	// <operador de suma><termino><expresion simple'> |
 	// lambda
-	public TStipo expresion_simpleP(TTipo tipof, boolean esReferencia) throws ExcepALexico, IOException,
-			ExcepASintatico, ExcepASemantico {
+	public TStipo expresion_simpleP(TTipo tipof, boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TOPERMAS || TActual.tipo == Token.TOPERMENOS || TActual.tipo == Token.TOPER_OR) {
 			TSlexema retOpsuma = operador_de_suma();
 			// --
@@ -507,14 +503,12 @@ public class Parser {
 	// <expresion'> :
 	// <operador de relacion><expresion simple> |
 	// lambda
-	public TStipo expresionP(TTipo tipof, boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico,
-			ExcepASemantico {
+	public TStipo expresionP(TTipo tipof, boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		// --
 		TStipo retorno = new TStipo();
 		// --
-		if (TActual.tipo == Token.TSIMBOLO_IGUAL || TActual.tipo == Token.TSIMBOLO_DISTINTO
-				|| TActual.tipo == Token.TSIMBOLO_MAYOR || TActual.tipo == Token.TSIMBOLO_MAYORIGUAL
-				|| TActual.tipo == Token.TSIMBOLO_MENOR || TActual.tipo == Token.TSIMBOLO_MENORIGUAL) {
+		if (TActual.tipo == Token.TSIMBOLO_IGUAL || TActual.tipo == Token.TSIMBOLO_DISTINTO || TActual.tipo == Token.TSIMBOLO_MAYOR
+				|| TActual.tipo == Token.TSIMBOLO_MAYORIGUAL || TActual.tipo == Token.TSIMBOLO_MENOR || TActual.tipo == Token.TSIMBOLO_MENORIGUAL) {
 			TSlexema reOprel = operador_de_relacion();
 			// --
 			if (esReferencia) {
@@ -547,8 +541,7 @@ public class Parser {
 					mepa.Mimprimir("CMIG");
 				}
 			} else {
-				throw new ExcepASemantico("Se esperaba dos expresiones aritmeticas con el operador de relacion.",
-						TActual.nlinea);
+				throw new ExcepASemantico("Se esperaba dos expresiones aritmeticas con el operador de relacion.", TActual.nlinea);
 			}
 			// --
 			return retorno;
@@ -603,9 +596,8 @@ public class Parser {
 	// TSIMBOLO_MAYOR |
 	// TSIMBOLO_MAYORIGUAL
 	public TSlexema operador_de_relacion() throws ExcepALexico, IOException, ExcepASintatico {
-		if (TActual.tipo == Token.TSIMBOLO_IGUAL || TActual.tipo == Token.TSIMBOLO_DISTINTO
-				|| TActual.tipo == Token.TSIMBOLO_MAYOR || TActual.tipo == Token.TSIMBOLO_MAYORIGUAL
-				|| TActual.tipo == Token.TSIMBOLO_MENOR || TActual.tipo == Token.TSIMBOLO_MENORIGUAL) {
+		if (TActual.tipo == Token.TSIMBOLO_IGUAL || TActual.tipo == Token.TSIMBOLO_DISTINTO || TActual.tipo == Token.TSIMBOLO_MAYOR
+				|| TActual.tipo == Token.TSIMBOLO_MAYORIGUAL || TActual.tipo == Token.TSIMBOLO_MENOR || TActual.tipo == Token.TSIMBOLO_MENORIGUAL) {
 			// --
 			TSlexema retorno = new TSlexema();
 			retorno.lexema = TActual.lexema;
@@ -629,7 +621,7 @@ public class Parser {
 		boolean esReferencia;
 		Funcion fun;
 		TStipo retorno = new TStipo();
-		
+
 		if (TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.FUNCION }, false)) {
 			// Reserva el espacio de memoria para el retorno de la funcion
 			fun = (Funcion) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.FUNCION });
@@ -667,32 +659,32 @@ public class Parser {
 				throw new ExcepASemantico("Los tipos no coinciden.", TActual.nlinea);
 			}
 			// --
-			siguiente_parametro_actual(false,lexema,posicion+1);
+			siguiente_parametro_actual(false, lexema, posicion + 1);
 			if (TActual.tipo == Token.TPARENTC) {
 				leerToken();
-				//--
+				// --
 				// Si es una funcion predefinida
-				if (fun.nivelL == TablaSimb.MNivelPre){
-					if (lexema.equals("succ")){
-						mepa.Mimprimir("APCT","1");
+				if (fun.nivelL == TablaSimb.MNivelPre) {
+					if (lexema.equals("succ")) {
+						mepa.Mimprimir("APCT", "1");
 						mepa.Mimprimir("SUMA");
 						retorno.tipo = retParAct.tipo;
-					}else if (lexema.equals("pred")){
-						mepa.Mimprimir("APCT","1");
+					} else if (lexema.equals("pred")) {
+						mepa.Mimprimir("APCT", "1");
 						mepa.Mimprimir("SUST");
 						retorno.tipo = retParAct.tipo;
-					}else if (lexema.equals("ord")){
+					} else if (lexema.equals("ord")) {
 						retorno.tipo = new TEntero();
-					}else{
+					} else {
 						// Sino es CHR
 						retorno.tipo = new TChar();
 					}
-				}else{
+				} else {
 					retorno.tipo = fun.salida;
-					
-					mepa.Mimprimir("LLPR",fun.etiqueta);
+
+					mepa.Mimprimir("LLPR", fun.etiqueta);
 				}
-				//--
+				// --
 				return retorno;
 			} else {
 				throw new ExcepASintatico("Se esperaba el simbolo ')'.", TActual.nlinea, TActual);
@@ -706,8 +698,8 @@ public class Parser {
 	// <siguiente parametro actual> :
 	// TCOMA <parametro actual><siguiente parametro actual> |
 	// lambda
-	public TSintetizado siguiente_parametro_actual(boolean esProcedimiento, String lexema, int posicion)
-			throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
+	public TSintetizado siguiente_parametro_actual(boolean esProcedimiento, String lexema, int posicion) throws ExcepALexico, IOException, ExcepASintatico,
+			ExcepASemantico {
 		// --
 		int UNIDAD;
 		boolean esReferencia;
@@ -723,6 +715,7 @@ public class Parser {
 		// Suponemos que ya chequeo que existe
 		uni = (Procedimiento) TablaSimb.obtener_de_tabla(lexema, new int[] { UNIDAD });
 
+		// La cantidad de parametros no se pasa de la que requiere la unidad.
 		if (uni.cpf > posicion) {
 			if (uni.ppf[posicion]) {
 				esReferencia = false;
@@ -774,8 +767,7 @@ public class Parser {
 		if (TActual.tipo == Token.TIDENTIFICADOR) {
 			return sentencia_simple();
 		}
-		if ((TActual.tipo == Token.TPALRES_BEGIN) || (TActual.tipo == Token.TPALRES_IF)
-				|| (TActual.tipo == Token.TPALRES_WHILE)) {
+		if ((TActual.tipo == Token.TPALRES_BEGIN) || (TActual.tipo == Token.TPALRES_IF) || (TActual.tipo == Token.TPALRES_WHILE)) {
 			return sentencia_estructurada();
 		}
 		// --
@@ -830,8 +822,7 @@ public class Parser {
 	// <sentencia de asignacion'> :
 	// <variable'> TASIGN <expresion> |
 	// TASIGN <expresion>
-	public TStipo sentencia_de_asignacionP(String lexema) throws ExcepALexico, IOException, ExcepASintatico,
-			ExcepASemantico {
+	public TStipo sentencia_de_asignacionP(String lexema) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		// --
 		TStipo retorno = new TStipo();
 		retorno.tipo = new TVoid();
@@ -851,6 +842,7 @@ public class Parser {
 					if (arreglo.esPorvalor) {
 						mepa.Mimprimir("ALAR", String.valueOf(arreglo.nivelL), String.valueOf(arreglo.desp));
 					} else {
+						// Es por referencia
 						mepa.Mimprimir("ALAI", String.valueOf(arreglo.nivelL), String.valueOf(arreglo.desp));
 					}
 				} else {
@@ -872,11 +864,13 @@ public class Parser {
 					}
 					Funcion fun = (Funcion) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.FUNCION });
 					if (fun.salida.comparar(retExp.tipo)) {
+						// Recuerda que se realizo la asignacion.
 						mepa.MretFuncion = true;
 						if (fun.salida.clase == TTipo.TPARREGLO) {
-							mepa.Mimprimir("POAR", String.valueOf(fun.nivelL), String.valueOf(fun.desp),
-									String.valueOf(fun.salida.tammemoria));
+							// Es un arreglo, es una asignacion masiva.
+							mepa.Mimprimir("POAR", String.valueOf(fun.nivelL), String.valueOf(fun.desp), String.valueOf(fun.salida.tammemoria));
 						} else {
+							// Apila la variable en la pila
 							mepa.Mimprimir("ALVL", String.valueOf(fun.nivelL), String.valueOf(fun.desp));
 						}
 					} else {
@@ -885,11 +879,11 @@ public class Parser {
 				} else if (TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.VARIABLE }, false)) {
 					Variable var = (Variable) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.VARIABLE });
 					if (var.tipo_de_estructura.comparar(retExp.tipo)) {
+						// Si es por valor, asigna directamente
 						if (var.esPorvalor) {
 							if (var.tipo_de_estructura.clase == TTipo.TPARREGLO) {
 								// Asignacion masiva de arreglo directo
-								mepa.Mimprimir("POAR", String.valueOf(var.nivelL), String.valueOf(var.desp),
-										String.valueOf(var.tipo_de_estructura.tammemoria));
+								mepa.Mimprimir("POAR", String.valueOf(var.nivelL), String.valueOf(var.desp), String.valueOf(var.tipo_de_estructura.tammemoria));
 							} else {
 								// Apila el valor de la pila en la variable
 								mepa.Mimprimir("ALVL", String.valueOf(var.nivelL), String.valueOf(var.desp));
@@ -897,8 +891,7 @@ public class Parser {
 						} else {
 							if (var.tipo_de_estructura.clase == TTipo.TPARREGLO) {
 								// Asignacion masiva de arreglo directo
-								mepa.Mimprimir("POAI", String.valueOf(var.nivelL), String.valueOf(var.desp),
-										String.valueOf(var.tipo_de_estructura.tammemoria));
+								mepa.Mimprimir("POAI", String.valueOf(var.nivelL), String.valueOf(var.desp), String.valueOf(var.tipo_de_estructura.tammemoria));
 							} else {
 								// Apila el valor de la pila en la variable
 								mepa.Mimprimir("ALVI", String.valueOf(var.nivelL), String.valueOf(var.desp));
@@ -938,6 +931,8 @@ public class Parser {
 				proc = (Procedimiento) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.PROCEDIMIENTO });
 
 				posicion = 0;
+				// La cantidad de parametros no se pasa de la que requiere la
+				// unidad.
 				if (proc.cpf > posicion) {
 
 					if (proc.ppf[posicion]) {
@@ -954,6 +949,7 @@ public class Parser {
 			// --
 			TStipo retParact = parametro_actual(esReferencia);
 			// --
+			// Chequeo de tipos
 			if (!retParact.tipo.comparar(proc.tpf[posicion])) {
 				throw new ExcepASemantico("Los tipos no coinciden.", TActual.nlinea);
 			}
@@ -991,6 +987,7 @@ public class Parser {
 						throw new Exception("Error en la funcion sentencia de procedmiento'.");
 					}
 				} else {
+					// Llamamos al procedimento
 					mepa.Mimprimir("LLPR", proc.etiqueta);
 				}
 				// --
@@ -1005,8 +1002,7 @@ public class Parser {
 
 	// <parametro actual> :
 	// <expresion>
-	public TStipo parametro_actual(boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico,
-			ExcepASemantico {
+	public TStipo parametro_actual(boolean esReferencia) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		TStipo expresion = expresion(esReferencia);
 		return expresion;
 	}
@@ -1046,8 +1042,7 @@ public class Parser {
 				if (TActual.tipo == Token.TIDENTIFICADOR || TActual.tipo == Token.TPALRES_BEGIN) {
 					throw new ExcepASintatico("Se esperaba el simbolo ';'.", TActual.nlinea, TActual);
 				} else {
-					throw new ExcepASintatico("Se esperaba un identificador o la palabra reservada 'begin'.",
-							TActual.nlinea, TActual);
+					throw new ExcepASintatico("Se esperaba un identificador o la palabra reservada 'begin'.", TActual.nlinea, TActual);
 				}
 			}
 		} else {
@@ -1087,6 +1082,7 @@ public class Parser {
 			String etielse = mepa.MobtProxEti();
 			String etifinelse = mepa.MobtProxEti();
 
+			// Indica el salto condicional al else, si la expresion falso.
 			mepa.Mimprimir("DSVF", etielse);
 			// --
 			if (TActual.tipo == Token.TPALRES_THEN) {
@@ -1113,16 +1109,21 @@ public class Parser {
 		if (TActual.tipo == Token.TPALRES_ELSE) {
 			leerToken();
 			// --
+			// Indica el salto incondicional saltando el else.
 			mepa.Mimprimir("DSVS", etifinelse);
+			// Marca el inicio del else.
 			mepa.Mimprimir(etielse, "NADA");
 			// --
 			sentencia();
 			// --
+			// Marca la sentencia que sigue al fin del else, y el if que lo
+			// contiene.
 			mepa.Mimprimir(etifinelse, "NADA");
 			// --
 			return retorno;
 		} else {
 			// --
+			// Marca la sentencia que sigue al fin del if.
 			mepa.Mimprimir(etielse, "NADA");
 			// --
 			return retorno;
@@ -1134,6 +1135,7 @@ public class Parser {
 	public TStipo sentencia_while() throws Exception {
 		// --
 		String eticomwhile = mepa.MobtProxEti();
+		// Marca el inicio del while
 		mepa.Mimprimir(eticomwhile, "NADA");
 		// --
 		if (TActual.tipo == Token.TPALRES_WHILE) {
@@ -1145,6 +1147,7 @@ public class Parser {
 			}
 
 			String etifinwhile = mepa.MobtProxEti();
+			// Si es falso, saltamos fuera del while
 			mepa.Mimprimir("DSVF", etifinwhile);
 			// --
 			if (TActual.tipo == Token.TPALRES_DO) {
@@ -1154,6 +1157,7 @@ public class Parser {
 				TStipo retorno = new TStipo();
 				retorno.tipo = retSentencia.tipo;
 
+				// Salta al inicio del while
 				mepa.Mimprimir("DSVS", eticomwhile);
 				mepa.Mimprimir(etifinwhile, "NADA");
 				// --
@@ -1182,8 +1186,9 @@ public class Parser {
 			// --
 			bloque();
 			// --
-			Procedimiento proc = (Procedimiento) TablaSimb.obtener_de_tabla(mepa.MLexemaUnidad,
-					new int[] { Simbolo.PROCEDIMIENTO });
+			Procedimiento proc = (Procedimiento) TablaSimb.obtener_de_tabla(mepa.MLexemaUnidad, new int[] { Simbolo.PROCEDIMIENTO });
+			// Libera el espacio reservado para los PARAMETROS de entrada y retorna
+			// del procedimento.
 			mepa.Mimprimir("RTPR", String.valueOf(proc.nivelL + 1), String.valueOf(proc.tampf));
 			mepa.MestaEnFuncion = MestaEnFuncionAux;
 			mepa.MLexemaUnidad = MLexemaUnidadAux;
@@ -1216,6 +1221,7 @@ public class Parser {
 		// --
 		parte_de_sentencias();
 		// --
+		// Liberar la memoria de las variables locales
 		mepa.Mimprimir("LMEM", String.valueOf(mtamreser));
 		// --
 		return new TSintetizado();
@@ -1245,8 +1251,7 @@ public class Parser {
 					int n = lista.size();
 					for (int i = 0; i < n; i++) {
 						ParametroForm parametro = lista.get(i);
-						TablaSimb.guardar_variable_en_tabla(parametro.lexema, parametro.tipo, TablaSimb.Mnivelact,
-								-(n + 3 - (i + 1)), parametro.esPorValor);
+						TablaSimb.guardar_variable_en_tabla(parametro.lexema, parametro.tipo, TablaSimb.Mnivelact, -(n + 3 - (i + 1)), parametro.esPorValor);
 					}
 					String etiqueta = mepa.MobtProxEti();
 					TablaSimb.guardar_procedimiento_en_tabla(identificador, lista, TablaSimb.Mnivelact - 1, etiqueta);
@@ -1300,8 +1305,7 @@ public class Parser {
 	// TPUNTO_Y_COMA <seccion de parametros formales><siguiente seccion de
 	// parametros formales> |
 	// lambda
-	public TSlistpform siguiente_seccion_de_parametros_formales(ListaParametrosForm lista) throws ExcepALexico,
-			IOException, ExcepASintatico, ExcepASemantico {
+	public TSlistpform siguiente_seccion_de_parametros_formales(ListaParametrosForm lista) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TPUNTO_Y_COMA) {
 			leerToken();
 			// --
@@ -1321,8 +1325,7 @@ public class Parser {
 	// <seccion de parametros formales> :
 	// <grupo de parametros> |
 	// TPALRES_VAR <grupo de parametros>
-	public TSlistpform seccion_de_parametros_formales(ListaParametrosForm lista) throws ExcepALexico, IOException,
-			ExcepASintatico, ExcepASemantico {
+	public TSlistpform seccion_de_parametros_formales(ListaParametrosForm lista) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		if (TActual.tipo == Token.TPALRES_VAR) {
 			leerToken();
 			TSlistpform retGrupo = grupo_de_parametros(lista, false);
@@ -1338,8 +1341,7 @@ public class Parser {
 
 	// <grupo de parametros> :
 	// TIDENTIFICADOR <siguiente grupo de parametros> TDOSPUNTOS TIDENTIFICADOR
-	public TSlistpform grupo_de_parametros(ListaParametrosForm lista, boolean esValor) throws ExcepALexico, IOException,
-			ExcepASintatico, ExcepASemantico {
+	public TSlistpform grupo_de_parametros(ListaParametrosForm lista, boolean esValor) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		// --
 		TSlistpform retorno = new TSlistpform();
 		// --
@@ -1381,8 +1383,7 @@ public class Parser {
 	// <siguiente grupo de parametros> :
 	// TCOMA TIDENTIFICADOR <siguiente grupo de parametros> |
 	// lambda
-	public TSlistlexema siguiente_grupo_de_parametros(ArrayList<String> listaLexema) throws ExcepALexico, IOException,
-			ExcepASintatico, ExcepASemantico {
+	public TSlistlexema siguiente_grupo_de_parametros(ArrayList<String> listaLexema) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		// --
 		TSlistlexema retGrupo;
 		// --
@@ -1485,6 +1486,7 @@ public class Parser {
 				throw new ExcepASintatico("Se esperaba el simbolo ';'.", TActual.nlinea, TActual);
 			}
 		} else {
+			// No hace nada
 			return new TSintetizado();
 		}
 	}
@@ -1529,6 +1531,8 @@ public class Parser {
 		if (TActual.tipo == Token.TIDENTIFICADOR) {
 			TStamvar retDeclaracion = declaracion_de_variable();
 			// --
+			// Mpos_var es global -- se esta haciendo un loop sin heredar ni
+			// sintetizar.
 			mepa.MposVar = mepa.MposVar + retDeclaracion.Mtam_var;
 			// --
 			if (TActual.tipo == Token.TPUNTO_Y_COMA) {
@@ -1611,18 +1615,22 @@ public class Parser {
 		mepa.MestaEnFuncion = true;
 		mepa.MLexemaUnidad = retEncabezado.lexema;
 
+		// Determina si al nombre de la funcion se le asigno un valor.
 		boolean MretFuncionAux = mepa.MretFuncion;
 		mepa.MretFuncion = false;
 		// --
 		bloque();
 		// --
 		if (!mepa.MretFuncion) {
+			// No se devolvio el valor de la funcion en el bloque.
 			throw new ExcepASemantico("No se le asigno ningun valor de retorno a la funcion.", TActual.nlinea);
 		}
+		// Restaura el valor anterior.
 		mepa.MretFuncion = MretFuncionAux;
-		Procedimiento proc = (Procedimiento) TablaSimb.obtener_de_tabla(mepa.MLexemaUnidad,
-				new int[] { Simbolo.PROCEDIMIENTO });
+		Procedimiento proc = (Procedimiento) TablaSimb.obtener_de_tabla(mepa.MLexemaUnidad, new int[] { Simbolo.PROCEDIMIENTO });
 
+		// Libera el espacio reservado para los PARAMETROS de entrada y retorna
+		// del procedimento.
 		mepa.Mimprimir("RTPR", String.valueOf(proc.nivelL + 1), String.valueOf(proc.tampf));
 		mepa.MestaEnFuncion = MestaFuncionAux;
 		mepa.MLexemaUnidad = MLexemaUnidadAux;
@@ -1660,14 +1668,13 @@ public class Parser {
 									int n = lista.size();
 									for (int i = 0; i < n; i++) {
 										ParametroForm parametro = lista.get(i);
-										TablaSimb.guardar_variable_en_tabla(parametro.lexema, parametro.tipo,
-												TablaSimb.Mnivelact, -(n + 3 - (i + 1)), parametro.esPorValor);
+										TablaSimb.guardar_variable_en_tabla(parametro.lexema, parametro.tipo, TablaSimb.Mnivelact, -(n + 3 - (i + 1)),
+												parametro.esPorValor);
 									}
 									String etiqueta = mepa.MobtProxEti();
 
 									Tipo tipobt = (Tipo) (TablaSimb.obtener_de_tabla(identificador2, new int[] { Simbolo.TIPO }));
-									TablaSimb.guardar_funcion_en_tabla(identificador1, lista, tipobt.tipo_de_estructura,
-											TablaSimb.Mnivelact - 1, -(n + 3), etiqueta);
+									TablaSimb.guardar_funcion_en_tabla(identificador1, lista, tipobt.tipo_de_estructura, TablaSimb.Mnivelact - 1, -(n + 3), etiqueta);
 
 									ret = new TSlexema();
 									ret.lexema = identificador1;
@@ -1778,7 +1785,6 @@ public class Parser {
 		if (TActual.tipo == Token.TEOF) {
 			return;
 		}
-		throw new ExcepASintatico("Se esperaba el final del archivo, pero se encontro algo mas...", TActual.nlinea,
-				TActual);
+		throw new ExcepASintatico("Se esperaba el final del archivo, pero se encontro algo mas...", TActual.nlinea, TActual);
 	}
 }
