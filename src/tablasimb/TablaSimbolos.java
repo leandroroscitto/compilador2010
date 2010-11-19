@@ -3,6 +3,7 @@ package tablasimb;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import auxiliares.MEPa;
 import auxiliares.ParametroForm;
 
 import tipos.TBoolean;
@@ -17,6 +18,8 @@ public class TablaSimbolos {
 	
 	public int Mnivelact = -1;
 	public final int MNivelPre = 0;
+	
+	public final int[] TodosSimb = {Simbolo.CONSTANTE,Simbolo.FUNCION,Simbolo.PROCEDIMIENTO,Simbolo.TIPO,Simbolo.VARIABLE};
 	
 	public TablaSimbolos(){
 		PTabla = new Pila<Hashtable<String, Simbolo>>();
@@ -39,7 +42,7 @@ public class TablaSimbolos {
 		guardar_constante_en_tabla("true", new TBoolean(), 1);
 		guardar_constante_en_tabla("false", new TBoolean(), 0);
 		
-		guardar_constante_en_tabla("maxint", new TEntero(), 32767);
+		guardar_constante_en_tabla("maxint", new TEntero(), MEPa.maxint);
 		
 		// TIPOS
 		guardar_tipo_en_tabla("integer", new TEntero());
