@@ -17,7 +17,7 @@ public class MEPa {
 
 	public int MposVar = 0;
 
-	public int EtiquetaAct = 0;
+	public int EtiquetaAct = 11;
 
 	public MEPa(String codint) throws FileNotFoundException {
 		PS = new PrintStream(codint);
@@ -33,18 +33,18 @@ public class MEPa {
 
 	public String MobtProxEti() {
 		EtiquetaAct++;
-		return "label" + String.valueOf(EtiquetaAct);
+		return "L" + String.valueOf(EtiquetaAct);
 	}
 
-	public boolean chequear_tipo_oper(TTipo t1,TTipo t2,String lexema){
-		if (t1.comparar(t2)){
-			if (lexema.equals("+") || lexema.equals("-") || lexema.equals("*") || lexema.equals("div")){
+	public boolean chequear_tipo_oper(TTipo t1, TTipo t2, String lexema) {
+		if (t1.comparar(t2)) {
+			if (lexema.equals("+") || lexema.equals("-") || lexema.equals("*") || lexema.equals("div")) {
 				return t1.clase == TTipo.TPENTERO;
-			}else{
+			} else {
 				// Es AND o OR
 				return t1.clase == TTipo.TPBOOLEAN;
 			}
-		}else{
+		} else {
 			return false;
 		}
 	}
@@ -56,44 +56,44 @@ public class MEPa {
 
 	public void generarEntSal() {
 		// Imprimir entero
-		Mimprimir("writeE", "ENPR", "1");
+		Mimprimir("L4", "ENPR", "1");
 		Mimprimir("IMPR");
-		Mimprimir("RTPR", "1", "1");
+		Mimprimir("RTPR", "1", ",", "1");
 
 		// Imprimir entero y nueva linea
-		Mimprimir("writelnE", "ENPR", "1");
+		Mimprimir("L5", "ENPR", "1");
 		Mimprimir("IMLN");
-		Mimprimir("RTPR", "1", "1");
+		Mimprimir("RTPR", "1", ",", "1");
 
 		// Leo entero
-		Mimprimir("readE", "ENPR", "1");
+		Mimprimir("L6", "ENPR", "1");
 		Mimprimir("LEER");
-		Mimprimir("RTPR", "1", "1");
+		Mimprimir("RTPR", "1", ",", "1");
 
 		// Leo entero y nueva linea
-		Mimprimir("writelnE", "ENPR", "1");
+		Mimprimir("L7", "ENPR", "1");
 		Mimprimir("LELN");
-		Mimprimir("RTPR", "1", "1");
+		Mimprimir("RTPR", "1", ",", "1");
 
 		// Imprimir caracter
-		Mimprimir("writeE", "ENPR", "1");
+		Mimprimir("L8", "ENPR", "1");
 		Mimprimir("IMCH");
-		Mimprimir("RTPR", "1", "1");
+		Mimprimir("RTPR", "1", ",", "1");
 
 		// Imprimir caracter y nueva linea
-		Mimprimir("writelnE", "ENPR", "1");
+		Mimprimir("L9", "ENPR", "1");
 		Mimprimir("IMCN");
-		Mimprimir("RTPR", "1", "1");
+		Mimprimir("RTPR", "1", ",", "1");
 
 		// Leo caracter
-		Mimprimir("readE", "ENPR", "1");
+		Mimprimir("L10", "ENPR", "1");
 		Mimprimir("LECH");
-		Mimprimir("RTPR", "1", "1");
+		Mimprimir("RTPR", "1", ",", "1");
 
 		// Leo caracter y nueva linea
-		Mimprimir("writelnE", "ENPR", "1");
+		Mimprimir("L11", "ENPR", "1");
 		Mimprimir("LECN");
-		Mimprimir("RTPR", "1", "1");
+		Mimprimir("RTPR", "1", ",", "1");
 	}
 
 	public void cerrarSalida() {

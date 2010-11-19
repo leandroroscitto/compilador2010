@@ -7,6 +7,6 @@ public class TEntero extends TCharInt {
 	}
 	
 	public boolean comparar(TTipo t){
-		return (t.clase == TPENTERO);
+		return (t.clase == TPENTERO || t.clase == TPCHARINT);
 	}
 }

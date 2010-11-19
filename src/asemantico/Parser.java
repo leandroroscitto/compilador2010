@@ -50,14 +50,13 @@ public class Parser {
 	public Parser(String fileurl) throws ExcepALexico, IOException {
 		ALexico = new Lexer(fileurl);
 		TActual = ALexico.nextToken();
-		fileurl = fileurl.split(".", 2)[0];
-		mepa = new MEPa(fileurl+".out");
+		mepa = new MEPa(fileurl + ".out");
 	}
-	
-	public Parser(String fileurl,String fileout) throws ExcepALexico, IOException {
+
+	public Parser(String fileurl, String fileout) throws ExcepALexico, IOException {
 		ALexico = new Lexer(fileurl);
 		TActual = ALexico.nextToken();
-		mepa = new MEPa(fileout+".out");
+		mepa = new MEPa(fileout + ".out");
 	}
 
 	private void leerToken() throws ExcepALexico, IOException {
@@ -675,7 +674,7 @@ public class Parser {
 						TArreglo arreglo = (TArreglo) var.tipo_de_estructura;
 						if (retExp.tipo.clase == TTipo.TPENTERO) {
 							// control fuera de rango
-							mepa.Mimprimir("CONT", String.valueOf(arreglo.base), String.valueOf(arreglo.base + arreglo.tamano));
+							mepa.Mimprimir("CONT", String.valueOf(arreglo.base), ",", String.valueOf(arreglo.base + arreglo.tamano));
 							// normaliza el indice del arreglo.
 							mepa.Mimprimir("APCT", String.valueOf(arreglo.base));
 							mepa.Mimprimir("SUST");
@@ -736,7 +735,7 @@ public class Parser {
 				throw new ExcepASemantico("Se esperaba una referencia a una variable.", TActual.nlinea);
 			}
 			// apila la constante numero.
-			mepa.Mimprimir("APTC", numero);
+			mepa.Mimprimir("APCT", numero);
 			TStipo retorno = new TStipo();
 
 			retorno.tipo = new TEntero();
@@ -751,7 +750,7 @@ public class Parser {
 				throw new ExcepASemantico("Se esperaba una referencia a una variable.", TActual.nlinea);
 			}
 			// apila la constante caracter.
-			mepa.Mimprimir("APTC", mepa.CharToMepa(caracter));
+			mepa.Mimprimir("APCT", mepa.CharToMepa(caracter));
 			TStipo retorno = new TStipo();
 
 			retorno.tipo = new TChar();
@@ -808,23 +807,23 @@ public class Parser {
 				// se pasa por referencia
 				if (arreglo.esPorvalor) {
 					// y vino por valor
-					mepa.Mimprimir("APDC", String.valueOf(arreglo.nivelL), String.valueOf(arreglo.desp));
+					mepa.Mimprimir("APDC", String.valueOf(arreglo.nivelL), ",", String.valueOf(arreglo.desp));
 					// imprimir(APDR,arreglo.nivelL,arreglo.desp);
 					// imprimir(SUMA);
 				} else {
 					// o vino por referencia
 					// se apila la direccion y se le apila el offset
-					mepa.Mimprimir("APVL", String.valueOf(arreglo.nivelL), String.valueOf(arreglo.desp));
+					mepa.Mimprimir("APVL", String.valueOf(arreglo.nivelL), ",", String.valueOf(arreglo.desp));
 					mepa.Mimprimir("SUMA");
 				}
 			} else {
 				// se pasa por valor
 				if (arreglo.esPorvalor) {
 					// y viene por valor
-					mepa.Mimprimir("APAR", String.valueOf(arreglo.nivelL), String.valueOf(arreglo.desp));
+					mepa.Mimprimir("APAR", String.valueOf(arreglo.nivelL), ",", String.valueOf(arreglo.desp));
 				} else {
 					// o vino por referencia.
-					mepa.Mimprimir("APAI", String.valueOf(arreglo.nivelL), String.valueOf(arreglo.desp));
+					mepa.Mimprimir("APAI", String.valueOf(arreglo.nivelL), ",", String.valueOf(arreglo.desp));
 				}
 			}
 			// --
@@ -871,7 +870,7 @@ public class Parser {
 					if (var.esPorvalor) {
 						// apila la direccion de la variable (para arreglos es lo
 						// mismo).
-						mepa.Mimprimir("APDR", String.valueOf(var.nivelL), String.valueOf(var.desp));
+						mepa.Mimprimir("APDR", String.valueOf(var.nivelL),",", String.valueOf(var.desp));
 					} else {
 						// vino por referencia.
 						// apilamos directamente el valor (es la direccion).
@@ -882,18 +881,18 @@ public class Parser {
 					if (var.esPorvalor) {
 						if (var.tipo_de_estructura.clase == TTipo.TPARREGLO) {
 							// es un arreglo por valor.
-							mepa.Mimprimir("PUAR", String.valueOf(var.nivelL), String.valueOf(var.desp), String.valueOf(var.tipo_de_estructura.tammemoria));
+							mepa.Mimprimir("PUAR", String.valueOf(var.nivelL), ",", String.valueOf(var.desp), ",", String.valueOf(var.tipo_de_estructura.tammemoria));
 						} else {
 							// es una variable por valor.
-							mepa.Mimprimir("APVL", String.valueOf(var.nivelL), String.valueOf(var.desp));
+							mepa.Mimprimir("APVL", String.valueOf(var.nivelL), ",", String.valueOf(var.desp));
 						}
 					} else {
 						if (var.tipo_de_estructura.clase == TTipo.TPARREGLO) {
 							// es un arreglo por referencia.
-							mepa.Mimprimir("PUAI", String.valueOf(var.nivelL), String.valueOf(var.desp), String.valueOf(var.tipo_de_estructura.tammemoria));
+							mepa.Mimprimir("PUAI", String.valueOf(var.nivelL), ",", String.valueOf(var.desp), ",", String.valueOf(var.tipo_de_estructura.tammemoria));
 						} else {
 							// es una variable por referencia.
-							mepa.Mimprimir("APVI", String.valueOf(var.nivelL), String.valueOf(var.desp));
+							mepa.Mimprimir("APVI", String.valueOf(var.nivelL), ",", String.valueOf(var.desp));
 						}
 					}
 				}
@@ -1236,29 +1235,30 @@ public class Parser {
 		boolean esReferencia;
 		TSintetizado retorno = new TSintetizado();
 		Procedimiento uni;
-
-		if (esProcedimiento) {
-			UNIDAD = Simbolo.PROCEDIMIENTO;
-		} else {
-			UNIDAD = Simbolo.FUNCION;
-		}
-
-		// Suponemos que ya chequeo que existe
-		uni = (Procedimiento) TablaSimb.obtener_de_tabla(lexema, new int[] { UNIDAD });
-
-		// La cantidad de parametros no se pasa de la que requiere la unidad.
-		if (uni.cpf > posicion) {
-			if (uni.ppf[posicion]) {
-				esReferencia = false;
-			} else {
-				esReferencia = true;
-			}
-		} else {
-			throw new ExcepASemantico("Se supero la cantidad de parametros formales.", TActual.nlinea);
-		}
 		// --
 		if (TActual.tipo == Token.TCOMA) {
 			leerToken();
+			// --
+			if (esProcedimiento) {
+				UNIDAD = Simbolo.PROCEDIMIENTO;
+			} else {
+				UNIDAD = Simbolo.FUNCION;
+			}
+
+			// Suponemos que ya chequeo que existe
+			uni = (Procedimiento) TablaSimb.obtener_de_tabla(lexema, new int[] { UNIDAD });
+
+			// La cantidad de parametros no se pasa de la que requiere la unidad.
+			if (uni.cpf > posicion) {
+				if (uni.ppf[posicion]) {
+					esReferencia = false;
+				} else {
+					esReferencia = true;
+				}
+			} else {
+				throw new ExcepASemantico("Se supero la cantidad de parametros formales.", TActual.nlinea);
+			}
+			// --
 			TStipo retParAct = parametro_actual(esReferencia);
 			// --
 			// Hace el chequeo de tipos
@@ -1279,7 +1279,7 @@ public class Parser {
 			// Suponemos que ya chequeo que existe
 			uni = (Procedimiento) TablaSimb.obtener_de_tabla(lexema, new int[] { UNIDAD });
 
-			if (uni.cpf != posicion + 1) {
+			if (uni.cpf != posicion) {
 				throw new ExcepASemantico("Faltan parametros en pasaje de la unidad.", TActual.nlinea);
 			}
 			// --
@@ -1371,10 +1371,10 @@ public class Parser {
 					}
 					Variable arreglo = (Variable) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.VARIABLE });
 					if (arreglo.esPorvalor) {
-						mepa.Mimprimir("ALAR", String.valueOf(arreglo.nivelL), String.valueOf(arreglo.desp));
+						mepa.Mimprimir("ALAR", String.valueOf(arreglo.nivelL), ",", String.valueOf(arreglo.desp));
 					} else {
 						// Es por referencia
-						mepa.Mimprimir("ALAI", String.valueOf(arreglo.nivelL), String.valueOf(arreglo.desp));
+						mepa.Mimprimir("ALAI", String.valueOf(arreglo.nivelL), ",", String.valueOf(arreglo.desp));
 					}
 				} else {
 					throw new ExcepASemantico("Tipos no compatibles", TActual.nlinea);
@@ -1399,10 +1399,10 @@ public class Parser {
 						mepa.MretFuncion = true;
 						if (fun.salida.clase == TTipo.TPARREGLO) {
 							// Es un arreglo, es una asignacion masiva.
-							mepa.Mimprimir("POAR", String.valueOf(fun.nivelL), String.valueOf(fun.desp), String.valueOf(fun.salida.tammemoria));
+							mepa.Mimprimir("POAR", String.valueOf(fun.nivelL), ",", String.valueOf(fun.desp), ",", String.valueOf(fun.salida.tammemoria));
 						} else {
 							// Apila la variable en la pila
-							mepa.Mimprimir("ALVL", String.valueOf(fun.nivelL), String.valueOf(fun.desp));
+							mepa.Mimprimir("ALVL", String.valueOf(fun.nivelL), ",", String.valueOf(fun.desp));
 						}
 					} else {
 						throw new ExcepASemantico("Tipos no compatibles.", TActual.nlinea);
@@ -1414,18 +1414,20 @@ public class Parser {
 						if (var.esPorvalor) {
 							if (var.tipo_de_estructura.clase == TTipo.TPARREGLO) {
 								// Asignacion masiva de arreglo directo
-								mepa.Mimprimir("POAR", String.valueOf(var.nivelL), String.valueOf(var.desp), String.valueOf(var.tipo_de_estructura.tammemoria));
+								mepa.Mimprimir("POAR", String.valueOf(var.nivelL), ",", String.valueOf(var.desp), ",",
+										String.valueOf(var.tipo_de_estructura.tammemoria));
 							} else {
 								// Apila el valor de la pila en la variable
-								mepa.Mimprimir("ALVL", String.valueOf(var.nivelL), String.valueOf(var.desp));
+								mepa.Mimprimir("ALVL", String.valueOf(var.nivelL), ",", String.valueOf(var.desp));
 							}
 						} else {
 							if (var.tipo_de_estructura.clase == TTipo.TPARREGLO) {
 								// Asignacion masiva de arreglo directo
-								mepa.Mimprimir("POAI", String.valueOf(var.nivelL), String.valueOf(var.desp), String.valueOf(var.tipo_de_estructura.tammemoria));
+								mepa.Mimprimir("POAI", String.valueOf(var.nivelL), ",", String.valueOf(var.desp), ",",
+										String.valueOf(var.tipo_de_estructura.tammemoria));
 							} else {
 								// Apila el valor de la pila en la variable
-								mepa.Mimprimir("ALVI", String.valueOf(var.nivelL), String.valueOf(var.desp));
+								mepa.Mimprimir("ALVI", String.valueOf(var.nivelL), ",", String.valueOf(var.desp));
 							}
 						}
 					} else {
@@ -1492,27 +1494,35 @@ public class Parser {
 				if (proc.nivelL == TablaSimb.MNivelPre) {
 					if (lexema.equals("write")) {
 						if (retParact.tipo.clase == TTipo.TPENTERO) {
-							mepa.Mimprimir("LLPR", "writeE");
+							//mepa.Mimprimir("LLPR", "L4");
+							mepa.Mimprimir("IMPR");
 						} else {
-							mepa.Mimprimir("LLPR", "writeC");
+							//mepa.Mimprimir("LLPR", "L8");
+							mepa.Mimprimir("IMCH");
 						}
 					} else if (lexema.equals("writeln")) {
 						if (retParact.tipo.clase == TTipo.TPENTERO) {
-							mepa.Mimprimir("LLPR", "writelnE");
+							//mepa.Mimprimir("LLPR", "L5");
+							mepa.Mimprimir("IMLN");
 						} else {
-							mepa.Mimprimir("LLPR", "writelnC");
+							//mepa.Mimprimir("LLPR", "L9");
+							mepa.Mimprimir("IMCN");
 						}
 					} else if (lexema.equals("read")) {
 						if (retParact.tipo.clase == TTipo.TPENTERO) {
-							mepa.Mimprimir("LLPR", "readE");
+							//mepa.Mimprimir("LLPR", "L6");
+							mepa.Mimprimir("LEER");
 						} else {
-							mepa.Mimprimir("LLPR", "readC");
+							//mepa.Mimprimir("LLPR", "L10");
+							mepa.Mimprimir("LECH");
 						}
 					} else if (lexema.equals("readln")) {
 						if (retParact.tipo.clase == TTipo.TPENTERO) {
-							mepa.Mimprimir("LLPR", "readlnE");
+							//mepa.Mimprimir("LLPR", "L7");
+							mepa.Mimprimir("LELN");
 						} else {
-							mepa.Mimprimir("LLPR", "readlnC");
+							//mepa.Mimprimir("LLPR", "L11");
+							mepa.Mimprimir("LECN");
 						}
 					} else {
 						throw new Exception("Error en la funcion sentencia de procedmiento'.");
@@ -1715,12 +1725,12 @@ public class Parser {
 			mepa.MestaEnFuncion = false;
 			mepa.MLexemaUnidad = retEncabezado.lexema;
 			// --
-			bloque();
+			bloque(false);
 			// --
 			Procedimiento proc = (Procedimiento) TablaSimb.obtener_de_tabla(mepa.MLexemaUnidad, new int[] { Simbolo.PROCEDIMIENTO });
 			// Libera el espacio reservado para los PARAMETROS de entrada y retorna
 			// del procedimento.
-			mepa.Mimprimir("RTPR", String.valueOf(proc.nivelL + 1), String.valueOf(proc.tampf));
+			mepa.Mimprimir("RTPR", String.valueOf(proc.nivelL + 1), ",", String.valueOf(proc.tampf));
 			mepa.MestaEnFuncion = MestaEnFuncionAux;
 			mepa.MLexemaUnidad = MLexemaUnidadAux;
 			// --
@@ -1736,7 +1746,7 @@ public class Parser {
 	// <parte de declaracion de variables>
 	// <parte de declaracion de funciones y procedimientos>
 	// <parte de sentencias>
-	public TSintetizado bloque() throws Exception {
+	public TSintetizado bloque(boolean esPrograma) throws Exception {
 		parte_de_definicion_de_constantes();
 		parte_de_definicion_de_tipos();
 		TStamreser retParDecVar = parte_de_declaracion_de_variables();
@@ -1745,6 +1755,10 @@ public class Parser {
 		mepa.Mimprimir("RMEM", String.valueOf(mtamreser));
 		String etiqueta = mepa.MobtProxEti();
 		mepa.Mimprimir("DSVS", etiqueta);
+		
+		if (esPrograma){
+			//mepa.generarEntSal();
+		}
 		// --
 		parte_de_declaracion_de_funciones_y_procedimientos();
 		// --
@@ -2152,7 +2166,7 @@ public class Parser {
 		boolean MretFuncionAux = mepa.MretFuncion;
 		mepa.MretFuncion = false;
 		// --
-		bloque();
+		bloque(false);
 		// --
 		if (!mepa.MretFuncion) {
 			// No se devolvio el valor de la funcion en el bloque.
@@ -2164,7 +2178,7 @@ public class Parser {
 
 		// Libera el espacio reservado para los PARAMETROS de entrada y retorna
 		// del procedimento.
-		mepa.Mimprimir("RTPR", String.valueOf(proc.nivelL + 1), String.valueOf(proc.tampf));
+		mepa.Mimprimir("RTPR", String.valueOf(proc.nivelL + 1), ",", String.valueOf(proc.tampf));
 		mepa.MestaEnFuncion = MestaFuncionAux;
 		mepa.MLexemaUnidad = MLexemaUnidadAux;
 		// --
@@ -2283,12 +2297,11 @@ public class Parser {
 				mepa.Mimprimir("INPP");
 				TablaSimb.crear_nivel_lexico();
 				TablaSimb.guardar_programa_en_tabla(TActual.lexema);
-				mepa.generarEntSal();
 				// =
 				leerToken();
 				if (TActual.tipo == Token.TPUNTO_Y_COMA) {
 					leerToken();
-					bloque();
+					bloque(true);
 					if (TActual.tipo == Token.TPUNTO) {
 						leerToken();
 						// =

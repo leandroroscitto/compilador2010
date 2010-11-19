@@ -19,14 +19,14 @@ public class Pila<E> extends ArrayList<E>{
 	}
 	
 	public E desapilar(){
-		E elemento = this.get(ultindice);
-		this.remove(ultindice);
+		E elemento = this.get(ultindice-1);
+		this.remove(ultindice-1);
 		ultindice--;
 		return elemento;
 	}
 	
 	public E tope(){
-		E elemento = this.get(ultindice);
+		E elemento = this.get(ultindice-1);
 		return elemento;
 	}
 	
