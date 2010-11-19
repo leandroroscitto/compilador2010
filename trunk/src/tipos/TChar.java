@@ -7,6 +7,6 @@ public class TChar extends TCharInt {
 	}
 	
 	public boolean comparar(TTipo t){
-		return (t.clase == TPCARACTER);
+		return (t.clase == TPCARACTER || t.clase == TPCHARINT);
 	}
 }
