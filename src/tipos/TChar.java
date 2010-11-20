@@ -1,6 +1,6 @@
 package tipos;
 
-public class TChar extends TCharInt {
+public class TChar extends TCharIntSub {
 	
 	public TChar(){
 		super("Char",TTipo.TPCARACTER);
