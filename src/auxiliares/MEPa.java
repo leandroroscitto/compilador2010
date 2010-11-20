@@ -39,7 +39,7 @@ public class MEPa {
 	public boolean chequear_tipo_oper(TTipo t1, TTipo t2, String lexema) {
 		if (t1.comparar(t2)) {
 			if (lexema.equals("+") || lexema.equals("-") || lexema.equals("*") || lexema.equals("div")) {
-				return t1.clase == TTipo.TPENTERO;
+				return (t1.clase == TTipo.TPENTERO || t1.clase == TTipo.TPSUBRANGO);
 			} else {
 				// Es AND o OR
 				return t1.clase == TTipo.TPBOOLEAN;
