@@ -1556,6 +1556,8 @@ public class Parser {
 			// --
 			// Chequeo de tipos
 			if (!retParact.tipo.comparar(proc.tpf[posicion])) {
+				System.out.println(posicion);
+				System.out.println(retParact.tipo.clase);
 				throw new ExcepASemantico("Los tipos no coinciden.", TActual.nlinea);
 			}
 			// --

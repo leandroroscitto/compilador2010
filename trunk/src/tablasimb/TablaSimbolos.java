@@ -109,6 +109,7 @@ public class TablaSimbolos {
 			tipopf[i] = par.tipo;
 			pasajepf[i] = par.esPorValor;
 			tapf += par.tipo.tammemoria;
+			i++;
 		}
 
 		taux.put(lexema, new Procedimiento(lexema, cantpf, tipopf, pasajepf, tapf, nivelL, etiqueta));
@@ -129,6 +130,7 @@ public class TablaSimbolos {
 			tipopf[i] = par.tipo;
 			pasajepf[i] = par.esPorValor;
 			tapf += par.tipo.tammemoria;
+			i++;
 		}
 
 		taux.put(lexema, new Funcion(lexema, cantpf, tipopf, pasajepf, tapf, nivelL, etiqueta, tr, desp));
