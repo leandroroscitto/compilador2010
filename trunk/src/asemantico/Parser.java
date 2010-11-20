@@ -1,21 +1,19 @@
 package asemantico;
 
-// TODO: chequear asignacion a subrangos de enteros en el pasaje de parametros (chequeo de tipos)
-
 import java.io.IOException;
 import java.util.ArrayList;
 
-import sintetizados.TStamvar;
-import sintetizados.TStiva;
-import sintetizados.TSlistpform;
+import sintetizados.TSesMenos;
 import sintetizados.TSintetizado;
 import sintetizados.TSlexema;
-import sintetizados.TStamreser;
-import sintetizados.TStipo;
 import sintetizados.TSlistlexema;
-import sintetizados.TSesMenos;
+import sintetizados.TSlistpform;
+import sintetizados.TStamreser;
+import sintetizados.TStamvar;
 import sintetizados.TStiSi;
 import sintetizados.TStifvaf;
+import sintetizados.TStipo;
+import sintetizados.TStiva;
 import tablasimb.Constante;
 import tablasimb.Funcion;
 import tablasimb.Procedimiento;
@@ -31,7 +29,6 @@ import tipos.TSimple;
 import tipos.TSubrango;
 import tipos.TTipo;
 import tipos.TVoid;
-
 import alexico.Lexer;
 import alexico.Token;
 import auxiliares.ListaParametrosForm;
@@ -123,12 +120,9 @@ public class Parser {
 			// --
 			if (TablaSimb.existe_en_tabla(identificador, new int[] { Simbolo.CONSTANTE }, false)) {
 				Constante id = (Constante) TablaSimb.obtener_de_tabla(identificador, new int[] { Simbolo.CONSTANTE });
-				if (id.tipo_de_estructura.clase == TTipo.TPENTERO) {
-					retorno.tipo = id.tipo_de_estructura;
-					retorno.valor = id.valor;
-				} else {
-					throw new ExcepASemantico("Se esperaba un entero en el subrango.", TActual.nlinea);
-				}
+
+				retorno.tipo = id.tipo_de_estructura;
+				retorno.valor = id.valor;
 			} else {
 				throw new ExcepASemantico("Costante no declarada.", TActual.nlinea);
 			}
@@ -300,18 +294,18 @@ public class Parser {
 	// <tipo arreglo>
 	public TStiSi tipo() throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		TStiSi retorno = new TStiSi();
-		if (TActual.tipo == Token.TIDENTIFICADOR){
+		if (TActual.tipo == Token.TIDENTIFICADOR) {
 			// --
-			if (TablaSimb.existe_en_tabla(TActual.lexema, new int[]{Simbolo.TIPO}, false)){
-				Tipo id = (Tipo) TablaSimb.obtener_de_tabla(TActual.lexema, new int[]{Simbolo.TIPO});
-				if (id.tipo_de_estructura.clase == TTipo.TPARREGLO){
+			if (TablaSimb.existe_en_tabla(TActual.lexema, new int[] { Simbolo.TIPO }, false)) {
+				Tipo id = (Tipo) TablaSimb.obtener_de_tabla(TActual.lexema, new int[] { Simbolo.TIPO });
+				if (id.tipo_de_estructura.clase == TTipo.TPARREGLO) {
 
 					retorno.tipo = id.tipo_de_estructura;
 					retorno.esSimple = false;
 
-					//--
+					// --
 					leerToken();
-					//--
+					// --
 					return retorno;
 				}
 				// Este else se omite, y entra al proximo if
@@ -401,7 +395,7 @@ public class Parser {
 						// Controla que el valor de la primera constante sea menor o
 						// igual que el de la segunda.
 						if (id.valor <= retTipoSimpP.valorf) {
-							retorno.tipo = new TSubrango(id.valor, retTipoSimpP.valorf - id.valor);
+							retorno.tipo = new TSubrango(id.valor, retTipoSimpP.valorf - id.valor + 1);
 						} else {
 							throw new ExcepASemantico("El valor del primer elemento del subrango tiene que ser menor igual que el del segundo.", TActual.nlinea);
 						}
@@ -431,7 +425,7 @@ public class Parser {
 				// Controla que la primera variable sea menor que la segunda.
 				TStipo retorno = new TStipo();
 				if (valor <= retConstSubr.valor) {
-					retorno.tipo = new TSubrango(valor, retConstSubr.valor - valor);
+					retorno.tipo = new TSubrango(valor, retConstSubr.valor - valor + 1);
 				} else {
 					throw new ExcepASemantico("El valor del primer elemento del subrango tiene que ser menor igual que el del segundo.", TActual.nlinea);
 				}
@@ -478,7 +472,7 @@ public class Parser {
 						// controla que el valor de la primera constante sea menor o
 						// igual que el de la segunda.
 						if (valor <= retConstSub.valor) {
-							retorno.tipo = new TSubrango(valor, retConstSub.valor - valor);
+							retorno.tipo = new TSubrango(valor, retConstSub.valor - valor + 1);
 						} else {
 							throw new ExcepASemantico("El primer elemento del subrango debe ser menor o igual al segundo", TActual.nlinea);
 						}
@@ -513,7 +507,7 @@ public class Parser {
 				// segunda.
 				TStipo retorno = new TStipo();
 				if (valor <= retConstSub.valor) {
-					retorno.tipo = new TSubrango(valor, retConstSub.valor - valor);
+					retorno.tipo = new TSubrango(valor, retConstSub.valor - valor + 1);
 				} else {
 					throw new ExcepASemantico("El primer elemento del subrango debe ser menor o igual al segundo", TActual.nlinea);
 				}
@@ -694,12 +688,17 @@ public class Parser {
 						TArreglo arreglo = (TArreglo) var.tipo_de_estructura;
 						if (retExp.tipo.clase == TTipo.TPENTERO) {
 							// control fuera de rango
-							mepa.Mimprimir("CONT", String.valueOf(arreglo.base), ",", String.valueOf(arreglo.base + arreglo.tamano));
+							mepa.Mimprimir("CONT", String.valueOf(arreglo.base), ",", String.valueOf(arreglo.base + arreglo.tamano - 1));
 							// normaliza el indice del arreglo.
 							mepa.Mimprimir("APCT", String.valueOf(arreglo.base));
 							mepa.Mimprimir("SUST");
 
-							retorno.tipo = arreglo.tbase;
+							// Si es un tipo subrango, lo pasa a tipo entero
+							if (arreglo.tbase.clase == TTipo.TPSUBRANGO) {
+								retorno.tipo = new TEntero();
+							} else {
+								retorno.tipo = arreglo.tbase;
+							}
 						} else {
 							throw new ExcepASemantico("Se esperaba un entero en la expresion.", TActual.nlinea);
 						}
@@ -735,7 +734,11 @@ public class Parser {
 			leerToken();
 			// --
 			if (!TablaSimb.existe_en_tabla(identificador, new int[] { Simbolo.FUNCION, Simbolo.CONSTANTE, Simbolo.VARIABLE }, false)) {
-				throw new ExcepASemantico("Identificador no declarado.", TActual.nlinea);
+				if (TablaSimb.existe_en_tabla(identificador, new int[] { Simbolo.PROCEDIMIENTO}, false)){
+					throw new ExcepASemantico("El procedimiento no tiene un valor de retorno.", TActual.nlinea);
+				}else{
+					throw new ExcepASemantico("Identificador no declarado.", TActual.nlinea);
+				}
 			}
 			// --
 			return factorP(identificador, esReferencia);
@@ -921,7 +924,13 @@ public class Parser {
 			throw new ExcepASemantico("Identificador no declarada.", TActual.nlinea);
 		}
 		TStipo retorno = new TStipo();
-		retorno.tipo = tipo;
+
+		// Si el tipo es un subrango, lo pasa a entero
+		if (tipo.clase == TTipo.TPSUBRANGO) {
+			retorno.tipo = new TEntero();
+		} else {
+			retorno.tipo = tipo;
+		}
 		// --
 		return retorno;
 	}
@@ -962,6 +971,10 @@ public class Parser {
 				}
 			} else {
 				throw new ExcepASemantico("El operador no esta definido para los operandos suministrados.", TActual.nlinea);
+			}
+			// Pregunta si es subrango para indicar que esta operando numeros
+			if (tipof.clase == TTipo.TPSUBRANGO || retFac.tipo.clase == TTipo.TPSUBRANGO) {
+				tipof = new TEntero();
 			}
 			// --
 			return terminoP(tipof, false);
@@ -1032,6 +1045,10 @@ public class Parser {
 			} else {
 				throw new ExcepASemantico("El operador no esta definido para los operandos suministrados.", TActual.nlinea);
 			}
+			// Pregunta si es subrango para indicar que esta operando numeros
+			if (tipof.clase == TTipo.TPSUBRANGO || retTerm.tipo.clase == TTipo.TPSUBRANGO) {
+				tipof = new TEntero();
+			}
 			// --
 			return expresion_simpleP(tipof, false);
 		} else {
@@ -1067,7 +1084,8 @@ public class Parser {
 			// --
 			TStipo retExpsimp = expresion_simple(false);
 			// --
-			if ((tipof.clase == TTipo.TPENTERO) && (retExpsimp.tipo.clase == TTipo.TPENTERO)) {
+			if ((tipof.clase == TTipo.TPENTERO || tipof.clase == TTipo.TPSUBRANGO)
+					&& (retExpsimp.tipo.clase == TTipo.TPENTERO || retExpsimp.tipo.clase == TTipo.TPSUBRANGO)) {
 				retorno.tipo = new TBoolean();
 
 				String lexema = reOprel.lexema;
@@ -1401,7 +1419,7 @@ public class Parser {
 						// Se le esta asignando un entero a un subrango, chequea que
 						// este dentro del rango
 						TSubrango taux = (TSubrango) retVarp.tipo;
-						mepa.Mimprimir("CONT", String.valueOf(taux.base), ",", String.valueOf(taux.base + taux.tamano));
+						mepa.Mimprimir("CONT", String.valueOf(taux.base), ",", String.valueOf(taux.base + taux.tamano - 1));
 					}
 
 					if (arreglo.esPorvalor) {
@@ -1434,7 +1452,7 @@ public class Parser {
 							// Se le esta asignando un entero a un subrango, chequea
 							// que este dentro del rango
 							TSubrango taux = (TSubrango) fun.salida;
-							mepa.Mimprimir("CONT", String.valueOf(taux.base), ",", String.valueOf(taux.base + taux.tamano));
+							mepa.Mimprimir("CONT", String.valueOf(taux.base), ",", String.valueOf(taux.base + taux.tamano - 1));
 						}
 
 						// Recuerda que se realizo la asignacion.
@@ -1457,7 +1475,7 @@ public class Parser {
 							// Se le esta asignando un entero a un subrango, chequea
 							// que este dentro del rango
 							TSubrango taux = (TSubrango) var.tipo_de_estructura;
-							mepa.Mimprimir("CONT", String.valueOf(taux.base), ",", String.valueOf(taux.base + taux.tamano));
+							mepa.Mimprimir("CONT", String.valueOf(taux.base), ",", String.valueOf(taux.base + taux.tamano - 1));
 						}
 
 						// Si es por valor, asigna directamente
@@ -1484,7 +1502,11 @@ public class Parser {
 						throw new ExcepASemantico("Tipo no compatible.", TActual.nlinea);
 					}
 				} else {
-					throw new ExcepASemantico("Variable no declarada.", TActual.nlinea);
+					if (TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.CONSTANTE }, false)){
+						throw new ExcepASemantico("No es posible asignar el valor a una constante.", TActual.nlinea);
+					}else{
+						throw new ExcepASemantico("Variable no declarada.", TActual.nlinea);
+					}
 				}
 				// --
 				return retorno;
