@@ -57,42 +57,50 @@ public class MEPa {
 	public void generarEntSal() {
 		// Imprimir entero
 		Mimprimir("L4", "ENPR", "1");
+		Mimprimir("APVL","1",",","-3");
 		Mimprimir("IMPR");
 		Mimprimir("RTPR", "1", ",", "1");
 
 		// Imprimir entero y nueva linea
 		Mimprimir("L5", "ENPR", "1");
+		Mimprimir("APVL","1",",","-3");
 		Mimprimir("IMLN");
 		Mimprimir("RTPR", "1", ",", "1");
 
 		// Leo entero
 		Mimprimir("L6", "ENPR", "1");
 		Mimprimir("LEER");
+		Mimprimir("ALVI","1",",","-3");
 		Mimprimir("RTPR", "1", ",", "1");
 
 		// Leo entero y nueva linea
 		Mimprimir("L7", "ENPR", "1");
 		Mimprimir("LELN");
+		Mimprimir("ALVI","1",",","-3");
 		Mimprimir("RTPR", "1", ",", "1");
 
 		// Imprimir caracter
 		Mimprimir("L8", "ENPR", "1");
+		Mimprimir("APVL","1",",","-3");
 		Mimprimir("IMCH");
 		Mimprimir("RTPR", "1", ",", "1");
 
 		// Imprimir caracter y nueva linea
 		Mimprimir("L9", "ENPR", "1");
+		Mimprimir("APVL","1",",","-3");
 		Mimprimir("IMCN");
 		Mimprimir("RTPR", "1", ",", "1");
 
 		// Leo caracter
 		Mimprimir("L10", "ENPR", "1");
 		Mimprimir("LECH");
+		Mimprimir("ALVI","1",",","-3");
 		Mimprimir("RTPR", "1", ",", "1");
 
 		// Leo caracter y nueva linea
 		Mimprimir("L11", "ENPR", "1");
 		Mimprimir("LECN");
+		Mimprimir("ALVI","1",",","-3");
 		Mimprimir("RTPR", "1", ",", "1");
 	}
 

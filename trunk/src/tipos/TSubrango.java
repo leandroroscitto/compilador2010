@@ -1,6 +1,6 @@
 package tipos;
 
-public class TSubrango extends TSimple {
+public class TSubrango extends TCharIntSub {
 	public int base;
 	public int tamano;
 	
@@ -14,6 +14,8 @@ public class TSubrango extends TSimple {
 		if (tipo.clase == TPSUBRANGO){
 			TSubrango ts = (TSubrango)tipo;
 			return (ts.base == this.base) && (ts.tamano == this.tamano);
+		}else if (tipo.clase == TPENTERO || tipo.clase == TPCHARINT){
+			return true;
 		}else{
 			return false;
 		}

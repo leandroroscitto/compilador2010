@@ -8,7 +8,7 @@ import auxiliares.ParametroForm;
 
 import tipos.TBoolean;
 import tipos.TChar;
-import tipos.TCharInt;
+import tipos.TCharIntSub;
 import tipos.TEntero;
 import tipos.TTipo;
 
@@ -53,7 +53,7 @@ public class TablaSimbolos {
 		
 		// FUNCIONES
 		ArrayList<ParametroForm> list = new ArrayList<ParametroForm>();
-		list.add(new ParametroForm("x", new TCharInt(), true));
+		list.add(new ParametroForm("x", new TCharIntSub(), true));
 
 		guardar_funcion_en_tabla("succ", list, new TEntero(), MNivelPre, 0, "L0");
 		guardar_funcion_en_tabla("pred", list, new TEntero(), MNivelPre, 1, "L1");
@@ -62,7 +62,7 @@ public class TablaSimbolos {
 
 		// PROCEDIMIENTOS
 		ArrayList<ParametroForm> list2 = new ArrayList<ParametroForm>();
-		list2.add(new ParametroForm("x", new TCharInt(), false));
+		list2.add(new ParametroForm("x", new TCharIntSub(), false));
 
 		guardar_procedimiento_en_tabla("read", list2, MNivelPre, "LNADA");
 		guardar_procedimiento_en_tabla("readln", list2, MNivelPre, "LNADA");
@@ -81,7 +81,7 @@ public class TablaSimbolos {
 
 	public void guardar_variable_en_tabla(String lexema, TTipo te, int nivelL, int desp, boolean espv) {
 		Hashtable<String, Simbolo> taux = PTabla.tope();
-		taux.put(lexema, new Variable(lexema, te, nivelL, desp, espv));
+		taux.put(lexema, new Variable(lexema, te, nivelL-1, desp, espv));
 	}
 
 	public void guardar_tipo_en_tabla(String lexema, TTipo te) {
