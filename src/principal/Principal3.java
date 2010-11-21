@@ -13,21 +13,19 @@ public class Principal3 {
 	public static void main(String[] args) throws ExcepALexico, ExcepASintatico {
 		if (args.length > 0) {
 			PrintStream Salida;
+			Parser ASintactico;
 			try {
+				Salida = System.out;
 				if (args.length == 1) {
-					// Hay un solo argumento, lo considero el archivo de entrada
-					// La salida es por pantalla
-					Salida = System.out;
+					// Crea el analizador sintactico, con el nombre
+					// del archivo de entrada como parametro
+					ASintactico = new Parser(args[0]);
 				} else {
-					// Hay al menos 2 argumentos, el primero es el archivo de entrada
-					// y el segundo el de salida
-					Salida = new PrintStream(args[1]);
+					// Crea el analizador sintactico, con el nombre
+					// del archivo de entrada y salida como parametro
+					ASintactico = new Parser(args[0],args[1]);
 				}
 				Salida.println("Archivo de entrada:'" + args[0] + "':");
-
-				// Crea el analizador sintactico, con el nombre
-				// del archivo de entrada como parametro
-				Parser ASintactico = new Parser(args[0]);
 
 				// Comienza con el no terminal programa, seguido
 				// por el final de archivo

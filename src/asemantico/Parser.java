@@ -734,9 +734,9 @@ public class Parser {
 			leerToken();
 			// --
 			if (!TablaSimb.existe_en_tabla(identificador, new int[] { Simbolo.FUNCION, Simbolo.CONSTANTE, Simbolo.VARIABLE }, false)) {
-				if (TablaSimb.existe_en_tabla(identificador, new int[] { Simbolo.PROCEDIMIENTO}, false)){
+				if (TablaSimb.existe_en_tabla(identificador, new int[] { Simbolo.PROCEDIMIENTO }, false)) {
 					throw new ExcepASemantico("El procedimiento no tiene un valor de retorno.", TActual.nlinea);
-				}else{
+				} else {
 					throw new ExcepASemantico("Identificador no declarado.", TActual.nlinea);
 				}
 			}
@@ -1093,15 +1093,11 @@ public class Parser {
 				if (lexema.equals("<")) {
 					mepa.Mimprimir("CMME");
 				} else if (lexema.equals("<=")) {
-					// Calcula el inverso y lo niega
-					mepa.Mimprimir("CMMA");
-					mepa.Mimprimir("NEGA");
+					mepa.Mimprimir("CMNI");
 				} else if (lexema.equals(">")) {
 					mepa.Mimprimir("CMMA");
 				} else if (lexema.equals(">=")) {
-					// Calcula el inverso y lo niega
-					mepa.Mimprimir("CMME");
-					mepa.Mimprimir("NEGA");
+					mepa.Mimprimir("CMYI");
 				} else if (lexema.equals("<>")) {
 					mepa.Mimprimir("CMDG");
 				} else {
@@ -1191,15 +1187,7 @@ public class Parser {
 		TStipo retorno = new TStipo();
 
 		if (TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.FUNCION }, false)) {
-			// Reserva el espacio de memoria para el retorno de la funcion
 			fun = (Funcion) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.FUNCION });
-
-			/*
-			 * int tam; if (fun.salida.clase == TTipo.TPARREGLO) { tam =
-			 * fun.salida.tammemoria; } else { tam = 1; }
-			 * 
-			 * mepa.Mimprimir("RMEM", String.valueOf(tam));
-			 */
 
 			// La cantidad de los parametros no se pasa de la que requiere la
 			// unidad.
@@ -1218,6 +1206,22 @@ public class Parser {
 		// --
 		if (TActual.tipo == Token.TPARENTA) {
 			leerToken();
+			// --
+			// Reserva el espacio de memoria para el retorno de la funcion
+			int tam;
+			if (fun.salida.clase == TTipo.TPARREGLO) {
+				tam = fun.salida.tammemoria;
+			} else {
+				tam = 1;
+			}
+
+			// Si es una de las predefinidas, no requiere reservar memoria
+			// se resuelve inline
+			if (fun.nivelL != TablaSimb.MNivelPre) {
+				mepa.Mimprimir("RMEM", String.valueOf(tam));
+			}
+
+			// --
 			TStipo retParAct = parametro_actual(esReferencia);
 			// --
 			// Chequeo de tipos
@@ -1248,14 +1252,13 @@ public class Parser {
 				} else {
 					retorno.tipo = fun.salida;
 
-					int tam;
-					if (fun.salida.clase == TTipo.TPARREGLO) {
-						tam = fun.salida.tammemoria;
-					} else {
-						tam = 1;
-					}
+					/*
+					 * int tam; if (fun.salida.clase == TTipo.TPARREGLO) { tam =
+					 * fun.salida.tammemoria; } else { tam = 1; }
+					 * 
+					 * mepa.Mimprimir("RMEM", String.valueOf(tam));
+					 */
 
-					mepa.Mimprimir("RMEM", String.valueOf(tam));
 					mepa.Mimprimir("LLPR", fun.etiqueta);
 				}
 				// --
@@ -1502,9 +1505,9 @@ public class Parser {
 						throw new ExcepASemantico("Tipo no compatible.", TActual.nlinea);
 					}
 				} else {
-					if (TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.CONSTANTE }, false)){
+					if (TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.CONSTANTE }, false)) {
 						throw new ExcepASemantico("No es posible asignar el valor a una constante.", TActual.nlinea);
-					}else{
+					} else {
 						throw new ExcepASemantico("Variable no declarada.", TActual.nlinea);
 					}
 				}
@@ -1556,8 +1559,6 @@ public class Parser {
 			// --
 			// Chequeo de tipos
 			if (!retParact.tipo.comparar(proc.tpf[posicion])) {
-				System.out.println(posicion);
-				System.out.println(retParact.tipo.clase);
 				throw new ExcepASemantico("Los tipos no coinciden.", TActual.nlinea);
 			}
 			// --
@@ -1867,10 +1868,38 @@ public class Parser {
 				}
 				if (!TablaSimb.existe_en_tabla(identificador, TablaSimb.TodosSimb, true)) {
 					ListaParametrosForm lista = retEncabProc.lista;
-					int n = lista.size();
-					for (int i = 0; i < n; i++) {
+
+					// n es la suma de los tamanos de los parametros formales
+					int n = 0;
+					for (ParametroForm p : lista) {
+						if (p.esPorValor){
+							// Si es por valor, se apila toda la variable en pila
+							n += p.tipo.tammemoria;
+						}else{
+							// Si es por referencia, se apila solo la direccion
+							n += 1;
+						}
+					}
+					// itam es la suma de los tamanos de los parametros formales de 0
+					// a i
+					int itam = 0;
+
+					for (int i = 0; i < lista.size(); i++) {
 						ParametroForm parametro = lista.get(i);
-						TablaSimb.guardar_variable_en_tabla(parametro.lexema, parametro.tipo, TablaSimb.Mnivelact, -(n + 3 - (i + 1)), parametro.esPorValor);
+						// Chequea que no existe otro parametro formal con el mismo
+						// nombre
+						if (!TablaSimb.existe_en_tabla(parametro.lexema, new int[] { Simbolo.VARIABLE }, true)) {
+							TablaSimb.guardar_variable_en_tabla(parametro.lexema, parametro.tipo, TablaSimb.Mnivelact, -(n + 3 - (itam + 1)), parametro.esPorValor);
+							if (parametro.esPorValor){
+								// Si es por valor, se apila toda la variable en pila
+								itam += parametro.tipo.tammemoria;
+							}else{
+								// Si es por referencia, se apila solo la direccion
+								itam += 1;
+							}
+						} else {
+							throw new ExcepASemantico("Identificador de parametro ya utilizado.", TActual.nlinea);
+						}
 					}
 					String etiqueta = mepa.MobtProxEti();
 					TablaSimb.guardar_procedimiento_en_tabla(identificador, lista, TablaSimb.Mnivelact - 1, etiqueta);
@@ -2248,11 +2277,11 @@ public class Parser {
 		}
 		// Restaura el valor anterior.
 		mepa.MretFuncion = MretFuncionAux;
-		Procedimiento proc = (Procedimiento) TablaSimb.obtener_de_tabla(mepa.MLexemaUnidad, new int[] { Simbolo.PROCEDIMIENTO });
+		Funcion fun = (Funcion) TablaSimb.obtener_de_tabla(mepa.MLexemaUnidad, new int[] { Simbolo.FUNCION });
 
 		// Libera el espacio reservado para los PARAMETROS de entrada y retorna
 		// del procedimento.
-		mepa.Mimprimir("RTPR", String.valueOf(proc.nivelL), ",", String.valueOf(proc.tampf));
+		mepa.Mimprimir("RTPR", String.valueOf(fun.nivelL), ",", String.valueOf(fun.tampf));
 		mepa.MestaEnFuncion = MestaFuncionAux;
 		mepa.MLexemaUnidad = MLexemaUnidadAux;
 		// --
@@ -2286,11 +2315,41 @@ public class Parser {
 							if (!TablaSimb.existe_en_tabla(identificador1, TablaSimb.TodosSimb, true)) {
 								if (TablaSimb.existe_en_tabla(identificador2, new int[] { Simbolo.TIPO }, false)) {
 									ListaParametrosForm lista = retefp.lista;
-									int n = lista.size();
-									for (int i = 0; i < n; i++) {
+
+									// n es la suma de los tamanos de los parametros
+									// formales
+									int n = 0;
+									for (ParametroForm p : lista) {
+										if (p.esPorValor){
+											// Si es por valor, se apila toda la variable en pila
+											n += p.tipo.tammemoria;
+										}else{
+											// Si es por referencia, se apila solo la direccion
+											n += 1;
+										}
+									}
+									// itam es la suma de los tamanos de los parametros
+									// formales de 0
+									// a i
+									int itam = 0;
+
+									for (int i = 0; i < lista.size(); i++) {
 										ParametroForm parametro = lista.get(i);
-										TablaSimb.guardar_variable_en_tabla(parametro.lexema, parametro.tipo, TablaSimb.Mnivelact, -(n + 3 - (i + 1)),
-												parametro.esPorValor);
+										// Chequea que no existe otro parametro formal con
+										// el mismo nombre
+										if (!TablaSimb.existe_en_tabla(parametro.lexema, new int[] { Simbolo.VARIABLE }, true)) {
+											TablaSimb.guardar_variable_en_tabla(parametro.lexema, parametro.tipo, TablaSimb.Mnivelact, -(n + 3 - (itam + 1)),
+													parametro.esPorValor);
+											if (parametro.esPorValor){
+												// Si es por valor, se apila toda la variable en pila
+												itam += parametro.tipo.tammemoria;
+											}else{
+												// Si es por referencia, se apila solo la direccion
+												itam += 1;
+											}
+										} else {
+											throw new ExcepASemantico("Identificador de parametro ya utilizado.", TActual.nlinea);
+										}
 									}
 									String etiqueta = mepa.MobtProxEti();
 

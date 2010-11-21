@@ -108,7 +108,14 @@ public class TablaSimbolos {
 		for (ParametroForm par : list) {
 			tipopf[i] = par.tipo;
 			pasajepf[i] = par.esPorValor;
-			tapf += par.tipo.tammemoria;
+			
+			if (par.esPorValor){
+				// Si es por valor, se apila toda la variable en pila
+				tapf += par.tipo.tammemoria;
+			}else{
+				// Si es por referencia, se apila solo la direccion
+				tapf += 1;
+			}
 			i++;
 		}
 
@@ -129,7 +136,14 @@ public class TablaSimbolos {
 		for (ParametroForm par : list) {
 			tipopf[i] = par.tipo;
 			pasajepf[i] = par.esPorValor;
-			tapf += par.tipo.tammemoria;
+			
+			if (par.esPorValor){
+				// Si es por valor, se apila toda la variable en pila
+				tapf += par.tipo.tammemoria;
+			}else{
+				// Si es por referencia, se apila solo la direccion
+				tapf += 1;
+			}
 			i++;
 		}
 
