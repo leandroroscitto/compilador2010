@@ -96,7 +96,6 @@ public class TablaSimbolos {
 
 	public void guardar_procedimiento_en_tabla(String lexema, ArrayList<ParametroForm> list, int nivelL, String etiqueta) {
 		// guarda el procedimiento en el nivel lexico anterior
-		// TODO: Cambiado a nivel actual
 		Hashtable<String, Simbolo> taux = PTabla.get(Mnivelact-1);
 
 		int cantpf = list.size();
@@ -124,7 +123,6 @@ public class TablaSimbolos {
 
 	public void guardar_funcion_en_tabla(String lexema, ArrayList<ParametroForm> list, TTipo tr, int nivelL, int desp, String etiqueta) {
 		// guarda la funcion en el nivel lexixo anterior.
-		// TODO: Cambiado a nivel actual
 		Hashtable<String, Simbolo> taux = PTabla.get(Mnivelact-1);
 
 		int cantpf = list.size();
