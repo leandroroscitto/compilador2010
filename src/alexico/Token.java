@@ -191,7 +191,7 @@ public class Token {
 
     public Token(int t, String l, int n) {
         tipo = t;
-        lexema = l;
+        lexema = l.toLowerCase();
         nlinea = n;
     }
 
