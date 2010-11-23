@@ -10,6 +10,7 @@ import tipos.TBoolean;
 import tipos.TChar;
 import tipos.TCharIntSub;
 import tipos.TEntero;
+import tipos.TSubrango;
 import tipos.TTipo;
 
 public class TablaSimbolos {
@@ -54,11 +55,13 @@ public class TablaSimbolos {
 		// FUNCIONES
 		ArrayList<ParametroForm> list = new ArrayList<ParametroForm>();
 		list.add(new ParametroForm("x", new TCharIntSub(), true));
+		ArrayList<ParametroForm> listchr = new ArrayList<ParametroForm>();
+		listchr.add(new ParametroForm("x", new TSubrango(0, 256), true));
 
 		guardar_funcion_en_tabla("succ", list, new TEntero(), MNivelPre, 0, "L0");
 		guardar_funcion_en_tabla("pred", list, new TEntero(), MNivelPre, 1, "L1");
 		guardar_funcion_en_tabla("ord", list, new TChar(), MNivelPre, 2, "L2");
-		guardar_funcion_en_tabla("chr", list, new TEntero(), MNivelPre, 3, "L3");
+		guardar_funcion_en_tabla("chr", listchr, new TEntero(), MNivelPre, 3, "L3");
 
 		// PROCEDIMIENTOS
 		ArrayList<ParametroForm> list2 = new ArrayList<ParametroForm>();
