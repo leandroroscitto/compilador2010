@@ -1074,8 +1074,8 @@ public class Parser {
 		// --
 		TStipo retorno = new TStipo();
 		// --
-		if (TActual.tipo == Token.TSIMBOLO_IGUAL || TActual.tipo == Token.TSIMBOLO_DISTINTO || TActual.tipo == Token.TSIMBOLO_MAYOR
-				|| TActual.tipo == Token.TSIMBOLO_MAYORIGUAL || TActual.tipo == Token.TSIMBOLO_MENOR || TActual.tipo == Token.TSIMBOLO_MENORIGUAL) {
+		if (TActual.tipo == Token.TSIMBOLO_IGUAL || TActual.tipo == Token.TSIMBOLO_DISTINTO || TActual.tipo == Token.TSIMBOLO_MAYOR || TActual.tipo == Token.TSIMBOLO_MAYORIGUAL
+				|| TActual.tipo == Token.TSIMBOLO_MENOR || TActual.tipo == Token.TSIMBOLO_MENORIGUAL) {
 			TSlexema reOprel = operador_de_relacion();
 			// --
 			if (esReferencia) {
@@ -1084,8 +1084,7 @@ public class Parser {
 			// --
 			TStipo retExpsimp = expresion_simple(false);
 			// --
-			if ((tipof.clase == TTipo.TPENTERO || tipof.clase == TTipo.TPSUBRANGO)
-					&& (retExpsimp.tipo.clase == TTipo.TPENTERO || retExpsimp.tipo.clase == TTipo.TPSUBRANGO)) {
+			if ((tipof.clase == TTipo.TPENTERO || tipof.clase == TTipo.TPSUBRANGO) && (retExpsimp.tipo.clase == TTipo.TPENTERO || retExpsimp.tipo.clase == TTipo.TPSUBRANGO)) {
 				retorno.tipo = new TBoolean();
 
 				String lexema = reOprel.lexema;
@@ -1160,8 +1159,8 @@ public class Parser {
 	// TSIMBOLO_MAYOR |
 	// TSIMBOLO_MAYORIGUAL
 	public TSlexema operador_de_relacion() throws ExcepALexico, IOException, ExcepASintatico {
-		if (TActual.tipo == Token.TSIMBOLO_IGUAL || TActual.tipo == Token.TSIMBOLO_DISTINTO || TActual.tipo == Token.TSIMBOLO_MAYOR
-				|| TActual.tipo == Token.TSIMBOLO_MAYORIGUAL || TActual.tipo == Token.TSIMBOLO_MENOR || TActual.tipo == Token.TSIMBOLO_MENORIGUAL) {
+		if (TActual.tipo == Token.TSIMBOLO_IGUAL || TActual.tipo == Token.TSIMBOLO_DISTINTO || TActual.tipo == Token.TSIMBOLO_MAYOR || TActual.tipo == Token.TSIMBOLO_MAYORIGUAL
+				|| TActual.tipo == Token.TSIMBOLO_MENOR || TActual.tipo == Token.TSIMBOLO_MENORIGUAL) {
 			// --
 			TSlexema retorno = new TSlexema();
 			retorno.lexema = TActual.lexema;
@@ -1246,7 +1245,9 @@ public class Parser {
 					} else if (lexema.equals("ord")) {
 						retorno.tipo = new TEntero();
 					} else {
-						// Sino es CHR
+						// Sino es CHR, controla que el valor este dentro del rango de
+						// ASCII
+						mepa.Mimprimir("CONT", "0", ",", "255");
 						retorno.tipo = new TChar();
 					}
 				} else {
@@ -1275,8 +1276,7 @@ public class Parser {
 	// <siguiente parametro actual> :
 	// TCOMA <parametro actual><siguiente parametro actual> |
 	// lambda
-	public TSintetizado siguiente_parametro_actual(boolean esProcedimiento, String lexema, int posicion) throws ExcepALexico, IOException, ExcepASintatico,
-			ExcepASemantico {
+	public TSintetizado siguiente_parametro_actual(boolean esProcedimiento, String lexema, int posicion) throws ExcepALexico, IOException, ExcepASintatico, ExcepASemantico {
 		// --
 		int UNIDAD;
 		boolean esReferencia;
@@ -1485,8 +1485,7 @@ public class Parser {
 						if (var.esPorvalor) {
 							if (var.tipo_de_estructura.clase == TTipo.TPARREGLO) {
 								// Asignacion masiva de arreglo directo
-								mepa.Mimprimir("POAR", String.valueOf(var.nivelL), ",", String.valueOf(var.desp), ",",
-										String.valueOf(var.tipo_de_estructura.tammemoria));
+								mepa.Mimprimir("POAR", String.valueOf(var.nivelL), ",", String.valueOf(var.desp), ",", String.valueOf(var.tipo_de_estructura.tammemoria));
 							} else {
 								// Apila el valor de la pila en la variable
 								mepa.Mimprimir("ALVL", String.valueOf(var.nivelL), ",", String.valueOf(var.desp));
@@ -1494,8 +1493,7 @@ public class Parser {
 						} else {
 							if (var.tipo_de_estructura.clase == TTipo.TPARREGLO) {
 								// Asignacion masiva de arreglo directo
-								mepa.Mimprimir("POAI", String.valueOf(var.nivelL), ",", String.valueOf(var.desp), ",",
-										String.valueOf(var.tipo_de_estructura.tammemoria));
+								mepa.Mimprimir("POAI", String.valueOf(var.nivelL), ",", String.valueOf(var.desp), ",", String.valueOf(var.tipo_de_estructura.tammemoria));
 							} else {
 								// Apila el valor de la pila en la variable
 								mepa.Mimprimir("ALVI", String.valueOf(var.nivelL), ",", String.valueOf(var.desp));
@@ -1872,10 +1870,10 @@ public class Parser {
 					// n es la suma de los tamanos de los parametros formales
 					int n = 0;
 					for (ParametroForm p : lista) {
-						if (p.esPorValor){
+						if (p.esPorValor) {
 							// Si es por valor, se apila toda la variable en pila
 							n += p.tipo.tammemoria;
-						}else{
+						} else {
 							// Si es por referencia, se apila solo la direccion
 							n += 1;
 						}
@@ -1890,10 +1888,10 @@ public class Parser {
 						// nombre
 						if (!TablaSimb.existe_en_tabla(parametro.lexema, new int[] { Simbolo.VARIABLE }, true)) {
 							TablaSimb.guardar_variable_en_tabla(parametro.lexema, parametro.tipo, TablaSimb.Mnivelact, -(n + 3 - (itam + 1)), parametro.esPorValor);
-							if (parametro.esPorValor){
+							if (parametro.esPorValor) {
 								// Si es por valor, se apila toda la variable en pila
 								itam += parametro.tipo.tammemoria;
-							}else{
+							} else {
 								// Si es por referencia, se apila solo la direccion
 								itam += 1;
 							}
@@ -2273,7 +2271,8 @@ public class Parser {
 		// --
 		if (!mepa.MretFuncion) {
 			// No se devolvio el valor de la funcion en el bloque.
-			throw new ExcepASemantico("No se le asigno ningun valor de retorno a la funcion.", TActual.nlinea);
+			// Se devuelve un warning en vez de un error
+			System.out.println("Warning (linea " + TActual.nlinea + ", en funcion " + retEncabezado.lexema + "): No se le asigno ningun valor de retorno a la funcion.");
 		}
 		// Restaura el valor anterior.
 		mepa.MretFuncion = MretFuncionAux;
@@ -2320,11 +2319,13 @@ public class Parser {
 									// formales
 									int n = 0;
 									for (ParametroForm p : lista) {
-										if (p.esPorValor){
-											// Si es por valor, se apila toda la variable en pila
+										if (p.esPorValor) {
+											// Si es por valor, se apila toda la variable
+											// en pila
 											n += p.tipo.tammemoria;
-										}else{
-											// Si es por referencia, se apila solo la direccion
+										} else {
+											// Si es por referencia, se apila solo la
+											// direccion
 											n += 1;
 										}
 									}
@@ -2338,13 +2339,14 @@ public class Parser {
 										// Chequea que no existe otro parametro formal con
 										// el mismo nombre
 										if (!TablaSimb.existe_en_tabla(parametro.lexema, new int[] { Simbolo.VARIABLE }, true)) {
-											TablaSimb.guardar_variable_en_tabla(parametro.lexema, parametro.tipo, TablaSimb.Mnivelact, -(n + 3 - (itam + 1)),
-													parametro.esPorValor);
-											if (parametro.esPorValor){
-												// Si es por valor, se apila toda la variable en pila
+											TablaSimb.guardar_variable_en_tabla(parametro.lexema, parametro.tipo, TablaSimb.Mnivelact, -(n + 3 - (itam + 1)), parametro.esPorValor);
+											if (parametro.esPorValor) {
+												// Si es por valor, se apila toda la
+												// variable en pila
 												itam += parametro.tipo.tammemoria;
-											}else{
-												// Si es por referencia, se apila solo la direccion
+											} else {
+												// Si es por referencia, se apila solo la
+												// direccion
 												itam += 1;
 											}
 										} else {
