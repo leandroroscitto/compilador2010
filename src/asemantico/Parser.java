@@ -124,7 +124,7 @@ public class Parser {
 				retorno.tipo = id.tipo_de_estructura;
 				retorno.valor = id.valor;
 			} else {
-				throw new ExcepASemantico("Costante no declarada.", TActual.nlinea);
+				throw new ExcepASemantico("Costante " + identificador + " no declarada.", TActual.nlinea);
 			}
 			// --
 			return retorno;
@@ -184,7 +184,7 @@ public class Parser {
 					throw new ExcepASemantico("Se esperaba un entero en el subrango.", TActual.nlinea);
 				}
 			} else {
-				throw new ExcepASemantico("Costante no declarada.", TActual.nlinea);
+				throw new ExcepASemantico("Costante " + identificador + " no declarada.", TActual.nlinea);
 			}
 			// --
 			return retorno;
@@ -228,7 +228,7 @@ public class Parser {
 					throw new ExcepASemantico("Se esperaba un entero en el subrango.", TActual.nlinea);
 				}
 			} else {
-				throw new ExcepASemantico("Costante no declarada.", TActual.nlinea);
+				throw new ExcepASemantico("Costante " + identificador + " no declarada.", TActual.nlinea);
 			}
 			// --
 			return retorno;
@@ -264,11 +264,11 @@ public class Parser {
 			// --
 			if (mepa.MestaEnFuncion) {
 				if (identificador.equals(mepa.MLexemaUnidad)) {
-					throw new ExcepASemantico("Se esta redefiniendo la funcion.", TActual.nlinea);
+					throw new ExcepASemantico("Si intento redefinir la funcion " + mepa.MLexemaUnidad + ".", TActual.nlinea);
 				}
 			}
 			if (TablaSimb.existe_en_tabla(identificador, TablaSimb.TodosSimb, true)) {
-				throw new ExcepASemantico("Identificador ya utilizado.", TActual.nlinea);
+				throw new ExcepASemantico("Identificador " + identificador + " ya utilizado.", TActual.nlinea);
 			}
 			// --
 			if (TActual.tipo == Token.TSIMBOLO_IGUAL) {
@@ -341,11 +341,11 @@ public class Parser {
 			// --
 			if (mepa.MestaEnFuncion) {
 				if (identificador.equals(mepa.MLexemaUnidad)) {
-					throw new ExcepASemantico("Se esta redefiniendo la funcion.", TActual.nlinea);
+					throw new ExcepASemantico("Si intento redefinir la funcion " + mepa.MLexemaUnidad + ".", TActual.nlinea);
 				}
 			}
 			if (TablaSimb.existe_en_tabla(identificador, TablaSimb.TodosSimb, true)) {
-				throw new ExcepASemantico("Identificador ya utilizado.", TActual.nlinea);
+				throw new ExcepASemantico("Identificador " + identificador + " ya utilizado.", TActual.nlinea);
 			}
 			// --
 			if (TActual.tipo == Token.TSIMBOLO_IGUAL) {
@@ -381,10 +381,10 @@ public class Parser {
 					if (id.tipo_de_estructura.clase != TTipo.TPARREGLO) {
 						retorno.tipo = id.tipo_de_estructura;
 					} else {
-						throw new ExcepASemantico("El tipo simple no puede ser arreglo", TActual.nlinea);
+						throw new ExcepASemantico("Un tipo simple no puede ser arreglo.", TActual.nlinea);
 					}
 				} else {
-					throw new ExcepASemantico("Tipo no declarado", TActual.nlinea);
+					throw new ExcepASemantico("Tipo " + identificador + " no declarado.", TActual.nlinea);
 				}
 			} else {
 				if (TablaSimb.existe_en_tabla(identificador, new int[] { Simbolo.CONSTANTE }, false)) {
@@ -403,7 +403,7 @@ public class Parser {
 						throw new ExcepASemantico("Los dos elementos del subrango deben ser enteros.", TActual.nlinea);
 					}
 				} else {
-					throw new ExcepASemantico("Constante no declarada.", TActual.nlinea);
+					throw new ExcepASemantico("Constante " + identificador + " no declarada.", TActual.nlinea);
 				}
 			}
 			// --
@@ -474,13 +474,13 @@ public class Parser {
 						if (valor <= retConstSub.valor) {
 							retorno.tipo = new TSubrango(valor, retConstSub.valor - valor + 1);
 						} else {
-							throw new ExcepASemantico("El primer elemento del subrango debe ser menor o igual al segundo", TActual.nlinea);
+							throw new ExcepASemantico("El valor del primer elemento del subrango tiene que ser menor igual que el del segundo.", TActual.nlinea);
 						}
 					} else {
 						throw new ExcepASemantico("El valor del subrango debe ser un entero.", TActual.nlinea);
 					}
 				} else {
-					throw new ExcepASemantico("Constante no declarada.", TActual.nlinea);
+					throw new ExcepASemantico("Constante " + identificador + " no declarada.", TActual.nlinea);
 				}
 				// --
 				return retorno;
@@ -509,7 +509,7 @@ public class Parser {
 				if (valor <= retConstSub.valor) {
 					retorno.tipo = new TSubrango(valor, retConstSub.valor - valor + 1);
 				} else {
-					throw new ExcepASemantico("El primer elemento del subrango debe ser menor o igual al segundo", TActual.nlinea);
+					throw new ExcepASemantico("El valor del primer elemento del subrango tiene que ser menor igual que el del segundo.", TActual.nlinea);
 				}
 				// --
 				return retorno;
@@ -553,7 +553,7 @@ public class Parser {
 				TStipo retTipoSimp1 = tipo_simple();
 				// --
 				if (!retTipoSimp1.tipo.esSubrango()) {
-					throw new ExcepASemantico("El indice del arreglo debe ser un subrango de enteros", TActual.nlinea);
+					throw new ExcepASemantico("El tipo del indice de un arreglo debe ser un subrango de enteros.", TActual.nlinea);
 				}
 				// --
 				if (TActual.tipo == Token.TCORC) {
@@ -593,12 +593,12 @@ public class Parser {
 			// --
 			if (mepa.MestaEnFuncion) {
 				if (identificador.equals(mepa.MLexemaUnidad)) {
-					throw new ExcepASemantico("Se intento redefinir la funcion.", TActual.nlinea);
+					throw new ExcepASemantico("Se intento redefinir la funcion " + mepa.MLexemaUnidad + ".", TActual.nlinea);
 				}
 			}
 			ArrayList<String> lista = new ArrayList<String>();
 			if (TablaSimb.existe_en_tabla(identificador, TablaSimb.TodosSimb, true)) {
-				throw new ExcepASemantico("Identificador ya utilizado.", TActual.nlinea);
+				throw new ExcepASemantico("Identificador " + identificador + " ya utilizado.", TActual.nlinea);
 			} else {
 				lista.add(identificador);
 			}
@@ -647,14 +647,14 @@ public class Parser {
 				// --
 				if (mepa.MestaEnFuncion) {
 					if (identificador.equals(mepa.MLexemaUnidad)) {
-						throw new ExcepASemantico("Se intento redefinir la funcion.", TActual.nlinea);
+						throw new ExcepASemantico("Se intento redefinir la funcion " + mepa.MLexemaUnidad + ".", TActual.nlinea);
 					}
 				}
 				if (TablaSimb.existe_en_tabla(identificador, TablaSimb.TodosSimb, true)) {
-					throw new ExcepASemantico("Identificador ya utilizado.", TActual.nlinea);
+					throw new ExcepASemantico("Identificador " + identificador + " ya utilizado.", TActual.nlinea);
 				} else {
 					if (lista.contains(identificador)) {
-						throw new ExcepASemantico("Identificador repetido.", TActual.nlinea);
+						throw new ExcepASemantico("Identificador " + identificador + " repetido.", TActual.nlinea);
 					} else {
 						lista.add(identificador);
 					}
@@ -700,13 +700,13 @@ public class Parser {
 								retorno.tipo = arreglo.tbase;
 							}
 						} else {
-							throw new ExcepASemantico("Se esperaba un entero en la expresion.", TActual.nlinea);
+							throw new ExcepASemantico("La expresion para acceder a una componente de arreglo debe ser de tipo entero.", TActual.nlinea);
 						}
 					} else {
-						throw new ExcepASemantico("Se esperaba un arreglo.", TActual.nlinea);
+						throw new ExcepASemantico("Se esperaba un arreglo en el acceso a una componente.", TActual.nlinea);
 					}
 				} else {
-					throw new ExcepASemantico("Variable no declarada.", TActual.nlinea);
+					throw new ExcepASemantico("Variable " + lexema + " no declarada.", TActual.nlinea);
 				}
 				// --
 				return retorno;
@@ -735,9 +735,9 @@ public class Parser {
 			// --
 			if (!TablaSimb.existe_en_tabla(identificador, new int[] { Simbolo.FUNCION, Simbolo.CONSTANTE, Simbolo.VARIABLE }, false)) {
 				if (TablaSimb.existe_en_tabla(identificador, new int[] { Simbolo.PROCEDIMIENTO }, false)) {
-					throw new ExcepASemantico("El procedimiento no tiene un valor de retorno.", TActual.nlinea);
+					throw new ExcepASemantico("El procedimiento " + identificador + " no tiene un valor de retorno.", TActual.nlinea);
 				} else {
-					throw new ExcepASemantico("Identificador no declarado.", TActual.nlinea);
+					throw new ExcepASemantico("Identificador " + identificador + " no declarado.", TActual.nlinea);
 				}
 			}
 			// --
@@ -803,7 +803,7 @@ public class Parser {
 				// apila el negativo del tope de la pila.
 				mepa.Mimprimir("NEGA");
 			} else {
-				throw new ExcepASemantico("Se esperaba un tipo booleano", TActual.nlinea);
+				throw new ExcepASemantico("Se esperaba un valor booleano para la operacion NOT.", TActual.nlinea);
 			}
 			// --
 			TStipo retorno = new TStipo();
@@ -823,7 +823,7 @@ public class Parser {
 			TStipo retVarP = variableP(lexema);
 			// --
 			if (!TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.VARIABLE }, false)) {
-				throw new ExcepASemantico("Variable no declarada.", TActual.nlinea);
+				throw new ExcepASemantico("Variable " + lexema + " no declarada.", TActual.nlinea);
 			}
 			Variable arreglo = (Variable) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.VARIABLE });
 			if (esReferencia) {
@@ -855,7 +855,7 @@ public class Parser {
 		if (TActual.tipo == Token.TPARENTA) {
 			// --
 			if (esReferencia) {
-				throw new ExcepASemantico("Se esperaba una variable por referencia.", TActual.nlinea);
+				throw new ExcepASemantico("Se esperaba una referencia a una variable.", TActual.nlinea);
 			}
 			// --
 			return designador_de_funcionP(lexema);
@@ -867,7 +867,7 @@ public class Parser {
 			Simbolo id = TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.VARIABLE, Simbolo.CONSTANTE, Simbolo.FUNCION });
 			if (id.tipo_de_simbolo == Simbolo.FUNCION) {
 				if (esReferencia) {
-					throw new ExcepASemantico("Se esperaba una variable por referencia.", TActual.nlinea);
+					throw new ExcepASemantico("Se esperaba una referencia a una variable.", TActual.nlinea);
 				}
 				Funcion fun = (Funcion) id;
 				tipo = fun.salida;
@@ -877,7 +877,7 @@ public class Parser {
 				mepa.Mimprimir("LLPR", fun.etiqueta);
 			} else if (id.tipo_de_simbolo == Simbolo.CONSTANTE) {
 				if (esReferencia) {
-					throw new ExcepASemantico("Se esperaba una variable por referencia.", TActual.nlinea);
+					throw new ExcepASemantico("Se esperaba una referencia a una variable.", TActual.nlinea);
 				}
 				Constante cons = (Constante) id;
 				tipo = cons.tipo_de_estructura;
@@ -921,7 +921,7 @@ public class Parser {
 				}
 			}
 		} else {
-			throw new ExcepASemantico("Identificador no declarada.", TActual.nlinea);
+			throw new ExcepASemantico("Identificador " + lexema + " no declarado.", TActual.nlinea);
 		}
 		TStipo retorno = new TStipo();
 
@@ -970,7 +970,7 @@ public class Parser {
 					mepa.Mimprimir("CONJ");
 				}
 			} else {
-				throw new ExcepASemantico("El operador no esta definido para los operandos suministrados.", TActual.nlinea);
+				throw new ExcepASemantico("El operador " + retOpermult.lexema + " no esta definido para los operandos suministrados.", TActual.nlinea);
 			}
 			// Pregunta si es subrango para indicar que esta operando numeros
 			if (tipof.clase == TTipo.TPSUBRANGO || retFac.tipo.clase == TTipo.TPSUBRANGO) {
@@ -1043,7 +1043,7 @@ public class Parser {
 					mepa.Mimprimir("DISJ");
 				}
 			} else {
-				throw new ExcepASemantico("El operador no esta definido para los operandos suministrados.", TActual.nlinea);
+				throw new ExcepASemantico("El operador " + retOpsuma.lexema + " no esta definido para los operandos suministrados.", TActual.nlinea);
 			}
 			// Pregunta si es subrango para indicar que esta operando numeros
 			if (tipof.clase == TTipo.TPSUBRANGO || retTerm.tipo.clase == TTipo.TPSUBRANGO) {
@@ -1104,7 +1104,7 @@ public class Parser {
 					mepa.Mimprimir("CMIG");
 				}
 			} else {
-				throw new ExcepASemantico("Se esperaba dos expresiones aritmeticas con el operador de relacion.", TActual.nlinea);
+				throw new ExcepASemantico("Se esperaba dos expresiones aritmeticas con le operador de relacion" + reOprel.lexema + ".", TActual.nlinea);
 			}
 			// --
 			return retorno;
@@ -1200,7 +1200,7 @@ public class Parser {
 				throw new ExcepASemantico("Se supero la cantidad de parametros formales.", TActual.nlinea);
 			}
 		} else {
-			throw new ExcepASemantico("Funcion no declarada.", TActual.nlinea);
+			throw new ExcepASemantico("Funcion " + lexema + " no declarada.", TActual.nlinea);
 		}
 		// --
 		if (TActual.tipo == Token.TPARENTA) {
@@ -1225,7 +1225,7 @@ public class Parser {
 			// --
 			// Chequeo de tipos
 			if (!retParAct.tipo.comparar(fun.tpf[posicion])) {
-				throw new ExcepASemantico("Los tipos no coinciden.", TActual.nlinea);
+				throw new ExcepASemantico("Los tipos no coinciden en el parametro de la posicion " + (posicion + 1) + ".", TActual.nlinea);
 			}
 			// --
 			siguiente_parametro_actual(false, lexema, posicion + 1);
@@ -1310,7 +1310,7 @@ public class Parser {
 			// --
 			// Hace el chequeo de tipos
 			if (!retParAct.tipo.comparar(uni.tpf[posicion])) {
-				throw new ExcepASemantico("Los tipos no coinciden.", TActual.nlinea);
+				throw new ExcepASemantico("Los tipos no coinciden en el parametro de la posicion " + (posicion + 1) + ".", TActual.nlinea);
 			}
 			// --
 			siguiente_parametro_actual(esProcedimiento, lexema, posicion + 1);
@@ -1327,7 +1327,7 @@ public class Parser {
 			uni = (Procedimiento) TablaSimb.obtener_de_tabla(lexema, new int[] { UNIDAD });
 
 			if (uni.cpf != posicion) {
-				throw new ExcepASemantico("Faltan parametros en pasaje de la unidad.", TActual.nlinea);
+				throw new ExcepASemantico("Faltan parametros en el pasaje de la unidad " + lexema + ".", TActual.nlinea);
 			}
 			// --
 			return retorno;
@@ -1386,10 +1386,10 @@ public class Parser {
 				// Llamamos al procedimiento
 				mepa.Mimprimir("LLPR", String.valueOf(proc.etiqueta));
 			} else {
-				throw new ExcepASemantico("Procedimiento sin parametros no declarado.", TActual.nlinea);
+				throw new ExcepASemantico("Procedimiento " + lexema + " sin parametros no declarado.", TActual.nlinea);
 			}
 		} else {
-			throw new ExcepASemantico("Procedimiento no declarado.", TActual.nlinea);
+			throw new ExcepASemantico("Procedimiento " + lexema + " no declarado.", TActual.nlinea);
 		}
 		TStipo retorno = new TStipo();
 		retorno.tipo = new TVoid();
@@ -1414,7 +1414,7 @@ public class Parser {
 				// --
 				if (retVarp.tipo.comparar(retExp.tipo)) {
 					if (!TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.VARIABLE }, false)) {
-						throw new ExcepASemantico("Variable no declarada.", TActual.nlinea);
+						throw new ExcepASemantico("Variable " + lexema + " no declarada.", TActual.nlinea);
 					}
 					Variable arreglo = (Variable) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.VARIABLE });
 
@@ -1432,7 +1432,7 @@ public class Parser {
 						mepa.Mimprimir("ALAI", String.valueOf(arreglo.nivelL), ",", String.valueOf(arreglo.desp));
 					}
 				} else {
-					throw new ExcepASemantico("Tipos no compatibles", TActual.nlinea);
+					throw new ExcepASemantico("Tipos no compatibles en la asignación.", TActual.nlinea);
 				}
 				// --
 				return retorno;
@@ -1446,7 +1446,7 @@ public class Parser {
 				// --
 				if (mepa.MestaEnFuncion && (mepa.MLexemaUnidad.equals(lexema))) {
 					if (!TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.FUNCION }, false)) {
-						throw new ExcepASemantico("Funcion no declarada.", TActual.nlinea);
+						throw new ExcepASemantico("Funcion " + lexema + " no declarada.", TActual.nlinea);
 					}
 					Funcion fun = (Funcion) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.FUNCION });
 					if (fun.salida.comparar(retExp.tipo)) {
@@ -1468,7 +1468,7 @@ public class Parser {
 							mepa.Mimprimir("ALVL", String.valueOf(fun.nivelL), ",", String.valueOf(fun.desp));
 						}
 					} else {
-						throw new ExcepASemantico("Tipos no compatibles.", TActual.nlinea);
+						throw new ExcepASemantico("Tipos no compatibles en la asignacion.", TActual.nlinea);
 					}
 				} else if (TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.VARIABLE }, false)) {
 					Variable var = (Variable) TablaSimb.obtener_de_tabla(lexema, new int[] { Simbolo.VARIABLE });
@@ -1500,13 +1500,13 @@ public class Parser {
 							}
 						}
 					} else {
-						throw new ExcepASemantico("Tipo no compatible.", TActual.nlinea);
+						throw new ExcepASemantico("Tipos no compatibles en la asignacion.", TActual.nlinea);
 					}
 				} else {
 					if (TablaSimb.existe_en_tabla(lexema, new int[] { Simbolo.CONSTANTE }, false)) {
-						throw new ExcepASemantico("No es posible asignar el valor a una constante.", TActual.nlinea);
+						throw new ExcepASemantico("No es posible asignar un nuevo valor a una constante.", TActual.nlinea);
 					} else {
-						throw new ExcepASemantico("Variable no declarada.", TActual.nlinea);
+						throw new ExcepASemantico("Variable " + lexema + " no declarada.", TActual.nlinea);
 					}
 				}
 				// --
@@ -1550,14 +1550,14 @@ public class Parser {
 					throw new ExcepASemantico("Se supero la cantidad de parametros formales.", TActual.nlinea);
 				}
 			} else {
-				throw new ExcepASemantico("Procedimiento no declarado.", TActual.nlinea);
+				throw new ExcepASemantico("Procedimiento " + lexema + " no declarado.", TActual.nlinea);
 			}
 			// --
 			TStipo retParact = parametro_actual(esReferencia);
 			// --
 			// Chequeo de tipos
 			if (!retParact.tipo.comparar(proc.tpf[posicion])) {
-				throw new ExcepASemantico("Los tipos no coinciden.", TActual.nlinea);
+				throw new ExcepASemantico("Los tipos no coinciden en el parametro de la posicion " + (posicion + 1) + ".", TActual.nlinea);
 			}
 			// --
 			siguiente_parametro_actual(true, lexema, posicion + 1);
@@ -1757,7 +1757,7 @@ public class Parser {
 			TStipo retExpresion = expresion(false);
 			// --
 			if (retExpresion.tipo.clase != TTipo.TPBOOLEAN) {
-				throw new ExcepASemantico("Se esperaba una expresion booleana en la condicion del while", TActual.nlinea);
+				throw new ExcepASemantico("Se esperaba una expresion booleana en la condicion del while.", TActual.nlinea);
 			}
 
 			String etifinwhile = mepa.MobtProxEti();
@@ -1861,7 +1861,7 @@ public class Parser {
 				// --
 				if (mepa.MestaEnFuncion) {
 					if (identificador.equals(mepa.MLexemaUnidad)) {
-						throw new ExcepASemantico("Redefinicion de funcion", TActual.nlinea);
+						throw new ExcepASemantico("Redefinicion de la funcion " + mepa.MLexemaUnidad + ".", TActual.nlinea);
 					}
 				}
 				if (!TablaSimb.existe_en_tabla(identificador, TablaSimb.TodosSimb, true)) {
@@ -1896,7 +1896,7 @@ public class Parser {
 								itam += 1;
 							}
 						} else {
-							throw new ExcepASemantico("Identificador de parametro ya utilizado.", TActual.nlinea);
+							throw new ExcepASemantico("Identificador " + parametro.lexema + " ya utilizado en los parametros formales.", TActual.nlinea);
 						}
 					}
 					String etiqueta = mepa.MobtProxEti();
@@ -1906,7 +1906,7 @@ public class Parser {
 
 					mepa.Mimprimir(etiqueta, "ENPR", String.valueOf(TablaSimb.Mnivelact - 1));
 				} else {
-					throw new ExcepASemantico("Identificador ya declarado.", TActual.nlinea);
+					throw new ExcepASemantico("Identificador " + identificador + " ya declarado.", TActual.nlinea);
 				}
 				// --
 				if (TActual.tipo == Token.TPUNTO_Y_COMA) {
@@ -2042,7 +2042,7 @@ public class Parser {
 				leerToken();
 				// --
 				if (listaLexema.contains(identificador)) {
-					throw new ExcepASemantico("Identificador ya utilizado", TActual.nlinea);
+					throw new ExcepASemantico("Identificador " + identificador + " ya utilizado", TActual.nlinea);
 				} else {
 					listaLexema.add(identificador);
 				}
@@ -2308,7 +2308,7 @@ public class Parser {
 							// =
 							if (mepa.MestaEnFuncion) {
 								if (identificador1.equals(mepa.MLexemaUnidad)) {
-									throw new ExcepASemantico("Redefinicion de funcion.", TActual.nlinea);
+									throw new ExcepASemantico("Redefinicion de la funcion " + mepa.MLexemaUnidad + ".", TActual.nlinea);
 								}
 							}
 							if (!TablaSimb.existe_en_tabla(identificador1, TablaSimb.TodosSimb, true)) {
@@ -2350,7 +2350,7 @@ public class Parser {
 												itam += 1;
 											}
 										} else {
-											throw new ExcepASemantico("Identificador de parametro ya utilizado.", TActual.nlinea);
+											throw new ExcepASemantico("Identificador " + parametro.lexema + " ya utilizado en los parametros formales.", TActual.nlinea);
 										}
 									}
 									String etiqueta = mepa.MobtProxEti();
@@ -2363,7 +2363,7 @@ public class Parser {
 
 									mepa.Mimprimir(etiqueta, "ENPR", String.valueOf(TablaSimb.Mnivelact - 1));
 								} else {
-									throw new ExcepASemantico("Tipo no definido.", TActual.nlinea);
+									throw new ExcepASemantico("Tipo " + identificador2 + " no definido.", TActual.nlinea);
 								}
 							} else {
 								throw new ExcepASemantico("Identificador ya declarado: " + identificador1 + ".", TActual.nlinea);
